@@ -200,19 +200,18 @@ table{border-collapse:collapse;width:100%}
 <div style="font-size:12px;color:#7a4800;background:#fff8ee;border:1px solid #e8b86d;border-radius:10px;padding:10px 12px;margin-bottom:12px;line-height:1.5">⚠️ <b>Disclaimer:</b> Swap approvals are never guaranteed. Reserve coverage tables refresh throughout the PCS run window, and conditions change quickly. Use this tool to focus your efforts on the most favorable swaps — always verify your final request against live iCrew data before submitting.</div>
 
 <!-- RESERVE TABLE -->
-<div class="sched-section" id="res-section">
-  <div class="sched-header" onclick="toggleResSection()" style="cursor:pointer">
+<div class="sched-section" id="res-section" style="margin-bottom:10px">
+  <div class="sched-header" onclick="toggleResSection()" style="cursor:pointer;border-bottom:1px solid #f0f0f0">
     <div style="display:flex;align-items:center;gap:10px">
       <span style="font-size:18px">📊</span>
       <div>
         <div style="font-size:14px;font-weight:700;color:#333">Reserve Coverage</div>
-        <div id="res-sub" style="font-size:11px;color:#888">Tap to expand</div>
+        <div id="res-sub" style="font-size:11px;color:#888">Tap to load table</div>
       </div>
     </div>
-    <span id="res-arrow" style="font-size:12px;color:#888;transition:transform .2s">▼</span>
+    <span id="res-arrow" style="font-size:16px;color:#888;transition:transform .2s;font-weight:700;display:inline-block;transform:rotate(180deg)">▼</span>
   </div>
-  <div class="sched-body" id="res-body" style="display:none;padding:0 16px 14px">
-  <div style="font-size:15px;font-weight:800;color:#333;margin-bottom:4px;display:none">Reserve Table</div>
+  <div id="res-body" style="display:block;padding:12px 16px 14px">
   <div id="saved-table-banner" style="display:none" class="saved-banner">
     <div>
       <div style="font-size:13px;font-weight:700;color:#2a5c08">📋 Saved table available</div>
@@ -266,7 +265,10 @@ table{border-collapse:collapse;width:100%}
         <div id="sched-sub" style="font-size:11px;color:#888">Add your current rotations</div>
       </div>
     </div>
-    <button class="action-btn primary-btn" id="sched-toggle-btn" onclick="toggleSchedBody()" style="font-size:12px;padding:7px 14px">Add Schedule</button>
+    <!-- Shown when no table loaded -->
+    <button class="action-btn" id="sched-no-table-btn" style="font-size:12px;padding:7px 14px;opacity:.45;cursor:not-allowed;pointer-events:none;background:#e0e0e0;border-color:#ccc;color:#888">Submit Table First</button>
+    <!-- Shown when table is loaded -->
+    <button class="action-btn primary-btn" id="sched-toggle-btn" onclick="toggleSchedBody()" style="font-size:12px;padding:7px 14px;display:none">Add Schedule</button>
   </div>
   <div class="sched-body" id="sched-body">
     <div id="schedule-list" style="margin-bottom:10px"></div>
@@ -627,9 +629,22 @@ function finishLoad(){
   dropSel.clear();addSel.clear();scanDropSel.clear();avoidSel.clear();
   document.getElementById('main').style.display='block';
   const hhmm=loadTime?loadTime.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
-  document.getElementById('load-status').textContent=`✅ ${reserveData.length} days loaded${hhmm?' at '+hhmm:''}`;
+  const tz=getTZAbbr();
+  const tsLabel=hhmm?(hhmm+(tz?' '+tz:'')):'';
+  const statusText=`✅ ${reserveData.length} days loaded${tsLabel?' at '+tsLabel:''}`;
+  document.getElementById('load-status').textContent=statusText;
+  {const rs=document.getElementById('res-sub');if(rs)rs.textContent=statusText.replace('✅ ','');}
+  {const rb=document.getElementById('res-body');if(rb)rb.style.display='none';}
+  {const ra=document.getElementById('res-arrow');if(ra)ra.style.transform='';}
+  {const nb=document.getElementById('sched-no-table-btn');if(nb)nb.style.display='none';}
+  {const sb=document.getElementById('sched-toggle-btn');if(sb)sb.style.display='';}
   {const rs=document.getElementById('res-sub');if(rs){const t=document.getElementById('load-status').textContent;rs.textContent=t.replace('\u2705 ','');}}
   sortRotations();buildCovTable();refreshAllCals();renderScheduleList();
+  // Reveal schedule section now that table is loaded
+  const noTableBtn=document.getElementById('sched-no-table-btn');
+  const schedBtn=document.getElementById('sched-toggle-btn');
+  if(noTableBtn)noTableBtn.style.display='none';
+  if(schedBtn)schedBtn.style.display='';
   updateSchedCalVisibility();if(schedBodyOpen)buildSchedAddCal();
   rebuildAvoidForSchedule();evaluate();updateLengthOptions();
   document.getElementById('scan-results').innerHTML='';
@@ -1405,7 +1420,15 @@ function finishLoad(){
   dropSel.clear();addSel.clear();scanDropSel.clear();avoidSel.clear();
   document.getElementById('main').style.display='block';
   const hhmm=loadTime?loadTime.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
-  document.getElementById('load-status').textContent=`✅ ${reserveData.length} days loaded${hhmm?' at '+hhmm:''}`;
+  const tz=getTZAbbr();
+  const tsLabel=hhmm?(hhmm+(tz?' '+tz:'')):'';
+  const statusText=`✅ ${reserveData.length} days loaded${tsLabel?' at '+tsLabel:''}`;
+  document.getElementById('load-status').textContent=statusText;
+  {const rs=document.getElementById('res-sub');if(rs)rs.textContent=statusText.replace('✅ ','');}
+  {const rb=document.getElementById('res-body');if(rb)rb.style.display='none';}
+  {const ra=document.getElementById('res-arrow');if(ra)ra.style.transform='';}
+  {const nb=document.getElementById('sched-no-table-btn');if(nb)nb.style.display='none';}
+  {const sb=document.getElementById('sched-toggle-btn');if(sb)sb.style.display='';}
   sortRotations();buildCovTable();refreshAllCals();renderScheduleList();
   updateSchedCalVisibility();if(schedBodyOpen)buildSchedAddCal();
   rebuildAvoidForSchedule();evaluate();updateLengthOptions();
