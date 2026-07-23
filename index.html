@@ -181,6 +181,11 @@ table{border-collapse:collapse;width:100%}
 .len-cb-btn.active{background:#1a73e8;border-color:#1558b0;color:#fff}
 .len-cb-btn.disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
 .disclaimer{font-size:11px;color:#888;background:#fff8ee;border:1px solid #e8b86d;border-radius:8px;padding:8px 10px;margin-bottom:10px;line-height:1.4}
+.cal-day .dc{display:block;line-height:1}
+.adj-toggle-btn.adj-active{background:#1a73e8;border-color:#1558b0;color:#fff;font-weight:700}
+.tab-bar{padding:4px;background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.tab-btn{border-radius:10px;border:none;background:transparent;font-size:12px}
+.tab-btn.active{background:#1a73e8;box-shadow:0 2px 8px rgba(26,115,232,.4)}
 @media(min-width:600px){
   .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .grid-2>.card{margin-bottom:0}
@@ -195,8 +200,19 @@ table{border-collapse:collapse;width:100%}
 <div style="font-size:12px;color:#7a4800;background:#fff8ee;border:1px solid #e8b86d;border-radius:10px;padding:10px 12px;margin-bottom:12px;line-height:1.5">⚠️ <b>Disclaimer:</b> Swap approvals are never guaranteed. Reserve coverage tables refresh throughout the PCS run window, and conditions change quickly. Use this tool to focus your efforts on the most favorable swaps — always verify your final request against live iCrew data before submitting.</div>
 
 <!-- RESERVE TABLE -->
-<div class="card">
-  <div style="font-size:15px;font-weight:800;color:#333;margin-bottom:4px">Reserve Table</div>
+<div class="sched-section" id="res-section">
+  <div class="sched-header" onclick="toggleResSection()" style="cursor:pointer">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:18px">📊</span>
+      <div>
+        <div style="font-size:14px;font-weight:700;color:#333">Reserve Coverage</div>
+        <div id="res-sub" style="font-size:11px;color:#888">Tap to expand</div>
+      </div>
+    </div>
+    <span id="res-arrow" style="font-size:12px;color:#888;transition:transform .2s">▼</span>
+  </div>
+  <div class="sched-body" id="res-body" style="display:none;padding:0 16px 14px">
+  <div style="font-size:15px;font-weight:800;color:#333;margin-bottom:4px;display:none">Reserve Table</div>
   <div id="saved-table-banner" style="display:none" class="saved-banner">
     <div>
       <div style="font-size:13px;font-weight:700;color:#2a5c08">📋 Saved table available</div>
@@ -219,18 +235,22 @@ table{border-collapse:collapse;width:100%}
     </div>
   </div>
   <div id="adj-section" style="display:none;margin-top:10px;border-top:1px solid #eee;padding-top:10px">
-    <p style="font-size:12px;font-weight:700;color:#555;margin-bottom:6px">Adjacent Bid Period Levels <span style="font-weight:400;color:#888">(optional — cross-period swaps only)</span></p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-      <button class="action-btn" onclick="toggleAdjPaste('prev')" style="font-size:12px;flex:1">＋ Previous Month</button>
-      <button class="action-btn" onclick="toggleAdjPaste('next')" style="font-size:12px;flex:1">＋ Next Month</button>
+    <p style="font-size:12px;font-weight:700;color:#555;margin-bottom:8px">Adjacent Bid Period Levels <span style="font-weight:400;color:#888">(optional — cross-period swaps only)</span></p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+      <button class="action-btn adj-toggle-btn" id="btn-prev-adj" onclick="toggleAdjPanel('prev')" style="font-size:12px;flex:1">Previous Month</button>
+      <button class="action-btn adj-toggle-btn" id="btn-next-adj" onclick="toggleAdjPanel('next')" style="font-size:12px;flex:1">Next Month</button>
     </div>
-    <div id="prev-adj-paste" style="display:none;margin-bottom:8px">
+    <div id="prev-adj-panel" style="display:none;margin-bottom:8px;padding:12px;background:#f5f7ff;border-radius:10px;border:1.5px solid #1a73e8">
+      <p style="font-size:11px;font-weight:700;color:#1a73e8;margin-bottom:6px">Previous Month Table</p>
       <textarea id="paste-prev" placeholder="Paste previous bid period table..."></textarea>
       <button class="action-btn success-btn" onclick="loadAdjTable('prev')" style="width:100%;margin-top:6px;font-size:12px">Load Previous Month</button>
+      <p id="prev-adj-status" style="font-size:11px;color:#4a8c1c;margin-top:4px;display:none">✅ Previous month loaded</p>
     </div>
-    <div id="next-adj-paste" style="display:none">
+    <div id="next-adj-panel" style="display:none;padding:12px;background:#f5f7ff;border-radius:10px;border:1.5px solid #1a73e8">
+      <p style="font-size:11px;font-weight:700;color:#1a73e8;margin-bottom:6px">Next Month Table</p>
       <textarea id="paste-next" placeholder="Paste next bid period table..."></textarea>
       <button class="action-btn success-btn" onclick="loadAdjTable('next')" style="width:100%;margin-top:6px;font-size:12px">Load Next Month</button>
+      <p id="next-adj-status" style="font-size:11px;color:#4a8c1c;margin-top:4px;display:none">✅ Next month loaded</p>
     </div>
   </div>
   <p id="load-status" style="font-size:11px;color:#888;margin-top:6px"></p>
@@ -270,15 +290,17 @@ table{border-collapse:collapse;width:100%}
 
 <div id="main" style="display:none">
 
-<div class="card">
-  <div style="font-size:15px;font-weight:800;color:#333;margin-bottom:8px">Reserve Coverage</div>
+<div style="margin-top:10px;border-top:1px solid #eee;padding-top:10px">
+  <p style="font-size:12px;font-weight:700;color:#555;margin-bottom:6px">Coverage Table</p>
   <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table id="cov-table"></table></div>
 </div>
+  </div><!-- end res-body -->
+</div><!-- end res-section -->
 
 <div class="tab-bar">
-  <button class="tab-btn active" onclick="switchTab('checker')" id="tab-checker">Will it Swap</button>
-  <button class="tab-btn" onclick="switchTab('scanner')" id="tab-scanner">Trade Finder</button>
-  <button class="tab-btn" onclick="switchTab('maxoff')" id="tab-maxoff">Max Days Off</button>
+  <button class="tab-btn active" onclick="switchTab('checker')" id="tab-checker">✅ Will it Swap</button>
+  <button class="tab-btn" onclick="switchTab('scanner')" id="tab-scanner">🔍 Trade Finder</button>
+  <button class="tab-btn" onclick="switchTab('maxoff')" id="tab-maxoff">★ Max Days Off</button>
 </div>
 
 <!-- ══ WILL IT SWAP ══ -->
@@ -424,6 +446,15 @@ const MONTH_MAP={JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV
 const MN=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 const DOW=['SUN','MON','TUE','WED','THU','FRI','SAT'];
 
+
+function getTZAbbr(){
+  try{
+    const str=new Date().toLocaleTimeString('en-US',{timeZoneName:'short'});
+    const m=str.match(/\b([A-Z]{2,5})$/);
+    return m?m[1]:'';
+  }catch(e){return '';}
+}
+
 // ── DATE UTILS ──────────────────────────────────
 function parseDate(s){const m=s.match(/^(\d{2})([A-Z]{3})$/);return m?{day:parseInt(m[1]),month:MONTH_MAP[m[2]]}:null;}
 function toJsDate(l){const p=parseDate(l);return p?new Date(baseYear,p.month,p.day):null;}
@@ -472,7 +503,15 @@ function updateSchedCalVisibility(){
 }
 
 // ── ADJ TABLES ──────────────────────────────────
-function toggleAdjPaste(w){const el=document.getElementById(w==='prev'?'prev-adj-paste':'next-adj-paste');el.style.display=el.style.display==='none'?'block':'none';}
+function toggleAdjPanel(w){
+  const panelId=w==='prev'?'prev-adj-panel':'next-adj-panel';
+  const btnId=w==='prev'?'btn-prev-adj':'btn-next-adj';
+  const panel=document.getElementById(panelId);
+  const btn=document.getElementById(btnId);
+  const isOpen=panel.style.display!=='none';
+  panel.style.display=isOpen?'none':'block';
+  btn.classList.toggle('adj-active',!isOpen);
+}
 function loadAdjTable(w){
   const raw=document.getElementById(w==='prev'?'paste-prev':'paste-next').value;
   const data=parseLines(raw.split('\n').filter(l=>l.trim()));
@@ -480,8 +519,11 @@ function loadAdjTable(w){
   saveTableLS(raw,w);
   if(w==='prev')adjPrevData=data;else adjNextData=data;
   data.forEach(r=>{covMap[r.date]=r.avail-r.reqd;});
-  rebuildAllDates();refreshAllCals();
-  document.getElementById(w==='prev'?'prev-adj-paste':'next-adj-paste').style.display='none';
+  rebuildAllDates();refreshAllCals();buildCovTable();
+  const statusEl=document.getElementById(w==='prev'?'prev-adj-status':'next-adj-status');
+  if(statusEl)statusEl.style.display='block';
+  const btn=document.getElementById(w==='prev'?'btn-prev-adj':'btn-next-adj');
+  if(btn){btn.classList.add('adj-active');btn.style.background='#4a8c1c';btn.style.borderColor='#2d6010';}
 }
 function rebuildAllDates(){allDates=[...adjPrevData.slice(-4),...reserveData,...adjNextData.slice(0,4)];}
 
@@ -563,7 +605,7 @@ function processTableLoad(raw){
   if(nr){adjNextData=parseLines(nr.split('\n').filter(l=>l.trim()));adjNextData.forEach(r=>{covMap[r.date]=r.avail-r.reqd;});}
   rebuildAllDates();
   const label=loadTime.toLocaleDateString([],{month:'short',day:'numeric'})+' '+loadTime.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-  document.getElementById('saved-table-ts').textContent=`Last updated: ${label}`;
+  document.getElementById('saved-table-ts').textContent=`Last updated: ${label} ${getTZAbbr()}`;
   document.getElementById('saved-table-banner').style.display='flex';
   document.getElementById('paste-first').style.display='none';
   document.getElementById('adj-section').style.display='block';
@@ -586,6 +628,7 @@ function finishLoad(){
   document.getElementById('main').style.display='block';
   const hhmm=loadTime?loadTime.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
   document.getElementById('load-status').textContent=`✅ ${reserveData.length} days loaded${hhmm?' at '+hhmm:''}`;
+  {const rs=document.getElementById('res-sub');if(rs){const t=document.getElementById('load-status').textContent;rs.textContent=t.replace('\u2705 ','');}}
   sortRotations();buildCovTable();refreshAllCals();renderScheduleList();
   updateSchedCalVisibility();if(schedBodyOpen)buildSchedAddCal();
   rebuildAvoidForSchedule();evaluate();updateLengthOptions();
@@ -689,7 +732,10 @@ function buildCalendarInto(container,mode){
           block.style.gridColumn='span '+span;
           block.style.opacity='0.5';block.style.cursor='default';block.style.pointerEvents='none';
           if(isAdj)block.style.borderColor='#c9a0e8';
-          block.innerHTML='<div class="rb-name">✈️ '+rot.name+'</div><div class="rb-range">'+rot.days[0]+'–'+rot.days[rot.days.length-1]+'</div><div class="rb-dow">'+getDOW(rot.days[0])+'–'+getDOW(rot.days[rot.days.length-1])+'</div>';
+          const rotCovs=rot.days.map(d=>covMap[d]!==undefined?covMap[d]:null).filter(c=>c!==null);
+          const rotMinCov=rotCovs.length?Math.min(...rotCovs):null;
+          const rotCovStr=rotMinCov!==null?` <span style="font-size:8px;font-weight:700;color:${rotMinCov<0?'#d94040':rotMinCov===0?'#999':'#4a8c1c'}">(min:${rotMinCov>0?'+':''}${rotMinCov})</span>`:'';
+          block.innerHTML='<div class="rb-name">✈️ '+rot.name+rotCovStr+'</div><div class="rb-range">'+rot.days[0]+'–'+rot.days[rot.days.length-1]+'</div><div class="rb-dow">'+getDOW(rot.days[0])+'–'+getDOW(rot.days[rot.days.length-1])+'</div>';
           rowEl.appendChild(block);col+=span;
         } else {
           const cont=document.createElement('div');
@@ -826,7 +872,24 @@ function buildDayCell(r,mode,isAdj,wd){
   const isWorking=wd.has(label);
   const cell=document.createElement('div');
   let cls='cal-day';
-  if(isAdj)cls+=' adj-period';
+  if(isAdj){
+    // Still show selection state for adj days
+    if(mode==='drop'){
+      if(dropSel.has(label)&&addSel.has(label))cls+=' overlap adj-period';
+      else if(dropSel.has(label))cls+=' sel-drop adj-period';
+      else cls+=' adj-period';
+    } else if(mode==='add'){
+      if(dropSel.has(label)&&addSel.has(label))cls+=' overlap adj-period';
+      else if(addSel.has(label))cls+=' sel-add adj-period';
+      else cls+=' adj-period';
+    } else if(mode==='scan-drop'){
+      if(scanDropSel.has(label))cls+=' sel-drop adj-period';
+      else cls+=' adj-period';
+    } else if(mode==='avoid'||mode==='maxoff-avoid'){
+      if(avoidSel.has(label)||maxoffAvoidSel.has(label))cls+=' avoided adj-period';
+      else cls+=' adj-period';
+    } else cls+=' adj-period';
+  }
   else if(mode==='drop'){
     if(dropSel.has(label)&&addSel.has(label))cls+=' overlap';
     else if(dropSel.has(label))cls+=' sel-drop';
@@ -851,7 +914,9 @@ function buildDayCell(r,mode,isAdj,wd){
     else if(wknd)cls+=' wknd-day';
   }
   cell.className=cls;
-  cell.innerHTML=`<span class="dl">${label}</span><span class="dd">${dow}</span>`;
+  const cov=covMap[label]!==undefined?covMap[label]:null;
+  const covStr=cov!==null?`<span class="dc" style="font-size:7px;font-weight:700;color:${cov<0?'#d94040':cov===0?'#999':'#4a8c1c'}">${cov>0?'+':''}${cov}</span>`:'';
+  cell.innerHTML=`<span class="dl">${label}</span><span class="dd">${dow}</span>${covStr}`;
   cell.onclick=(e)=>{
     e.stopPropagation();
     if(mode==='sched-add'){schedStartDay=label;buildSchedAddCal();return;}
