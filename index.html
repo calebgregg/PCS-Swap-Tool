@@ -1,0 +1,2116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="./manifest.json">
+<title>✈️ PCS Swap Tool</title>
+<style>
+/* Token gate styles */
+.gate-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:#f0f2f5;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
+.gate-box{background:#fff;border-radius:16px;padding:28px 24px;width:100%;max-width:360px;box-shadow:0 4px 20px rgba(0,0,0,.12);text-align:center}
+.gate-icon{font-size:48px;margin-bottom:12px}
+.gate-title{font-size:18px;font-weight:800;color:#1a73e8;margin-bottom:6px}
+.gate-sub{font-size:13px;color:#888;margin-bottom:20px;line-height:1.5}
+.gate-btn{width:100%;padding:14px;border-radius:10px;border:none;background:#1a73e8;color:#fff;font-size:14px;font-weight:700;cursor:pointer}
+.gate-error{color:#d94040;font-size:13px;font-weight:600;margin-top:12px}
+.gate-spinner{width:36px;height:36px;border:3px solid #e0e0e0;border-top-color:#1a73e8;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(10px)}}
+</style>
+</head>
+<body>
+
+<!-- TOKEN GATE -->
+<div id="gate-screen" class="gate-screen">
+  <div class="gate-box">
+    <div class="gate-spinner" id="gate-spinner"></div>
+    <div class="gate-icon" id="gate-icon" style="display:none">✈️</div>
+    <div class="gate-title" id="gate-title">Verifying Access</div>
+    <div class="gate-sub" id="gate-sub">Checking your install link...</div>
+    <button class="gate-btn" id="gate-btn" style="display:none;margin-top:12px" onclick="retryLoad()">Try Again</button>
+  </div>
+</div>
+
+<!-- INSTALL SCREEN -->
+<div id="install-screen" class="gate-screen" style="display:none;background:#1a73e8">
+  <div style="width:100%;max-width:380px;padding:0 4px">
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="font-size:56px;margin-bottom:10px">✈️</div>
+      <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:6px">PCS Swap Tool</div>
+      <div style="font-size:14px;color:rgba(255,255,255,.8);line-height:1.5">Install this app on your home screen for the best experience and offline access.</div>
+    </div>
+
+    <!-- Steps card -->
+    <div style="background:#fff;border-radius:16px;padding:20px;margin-bottom:20px">
+      <div style="font-size:13px;font-weight:800;color:#1a73e8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:14px">How to Install</div>
+      
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:14px">
+        <div style="width:28px;height:28px;border-radius:50%;background:#1a73e8;color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:2px">Tap the Share button</div>
+          <div style="font-size:12px;color:#888">Tap <span style="font-size:15px">□↑</span> at the bottom of Safari</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:14px">
+        <div style="width:28px;height:28px;border-radius:50%;background:#1a73e8;color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:2px">Tap "Add to Home Screen"</div>
+          <div style="font-size:12px;color:#888">Scroll down in the share sheet to find it</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:14px">
+        <div style="width:28px;height:28px;border-radius:50%;background:#1a73e8;color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:2px">Tap "Add"</div>
+          <div style="font-size:12px;color:#888">Confirm the name and tap Add in the top right</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div style="width:28px;height:28px;border-radius:50%;background:#1a73e8;color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">4</div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:2px">Open from your home screen</div>
+          <div style="font-size:12px;color:#888">Tap the ✈️ PCS Swap icon to launch the app</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Animated arrow pointing down (toward Safari toolbar) -->
+    <div style="text-align:center;animation:bounce 1.5s infinite">
+      <div style="font-size:32px">⬇️</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.9);font-weight:600;margin-top:4px">Tap Share below</div>
+    </div>
+
+    <div style="text-align:center;margin-top:20px;font-size:11px;color:rgba(255,255,255,.5)">
+      This link is single-use and tied to your device.<br>Do not share it.
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP (hidden until token validated) -->
+<div id="main-app" style="display:none">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;max-width:100%;overflow-x:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5;color:#222;padding:10px;font-size:14px}
+.app-title{font-size:20px;font-weight:800;color:#1a73e8;margin-bottom:2px}
+.app-sub{font-size:12px;color:#888;margin-bottom:12px}
+.card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.step-label{font-size:13px;font-weight:800;color:#1a73e8;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.step-num{background:#1a73e8;color:#fff;font-size:11px;font-weight:800;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-desc{font-size:12px;color:#777;margin-bottom:10px;line-height:1.4}
+.section-desc{font-size:12px;color:#777;margin-bottom:10px;line-height:1.4;padding:8px 10px;background:#f5f7ff;border-radius:8px;border-left:3px solid #1a73e8}
+.tab-bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tab-btn{flex:1;padding:10px 4px;font-size:11px;font-weight:700;border-radius:10px;border:1.5px solid #ddd;background:#fff;color:#888;cursor:pointer;text-align:center;min-height:44px;transition:all .15s;min-width:80px}
+.tab-btn.active{background:#1a73e8;border-color:#1558b0;color:#fff;box-shadow:0 2px 6px rgba(26,115,232,.3)}
+.action-btn{font-size:13px;padding:10px 16px;border-radius:10px;border:1.5px solid #ddd;background:#f5f5f5;color:#333;cursor:pointer;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-weight:600;transition:all .12s}
+.primary-btn{background:#1a73e8;border-color:#1558b0;color:#fff}
+.success-btn{background:#4a8c1c;border-color:#2d6010;color:#fff}
+.danger-btn{background:#d94040;border-color:#a32d2d;color:#fff}
+.ghost-btn{background:transparent;border-color:#1a73e8;color:#1a73e8}
+.warn-btn{background:#f5a623;border-color:#c47d0a;color:#fff}
+.teal-btn{background:#0097a7;border-color:#006978;color:#fff}
+textarea{width:100%;font-size:12px;font-family:monospace;min-height:80px;resize:vertical;border-radius:10px;border:1.5px solid #ddd;padding:10px;background:#fafafa;-webkit-appearance:none}
+select{font-size:13px;padding:10px 12px;border-radius:10px;border:1.5px solid #ddd;background:#fff;color:#333;width:100%;min-height:44px;-webkit-appearance:auto;font-weight:600}
+table{border-collapse:collapse;width:100%}
+.cov-th{padding:4px 6px;border:1px solid #e0e0e0;background:#f5f7ff;font-size:10px;font-weight:700;text-align:center;color:#555;white-space:nowrap}
+.cov-td{padding:3px 6px;border:1px solid #e0e0e0;text-align:center;font-size:10px;white-space:nowrap}
+/* Calendar */
+.cal-wrap{width:100%}
+.cal-header{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:3px}
+.cal-dow{font-size:9px;font-weight:800;text-align:center;color:#999;padding:3px 0}
+.cal-dow.wknd{color:#c07000}
+.cal-row{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:3px}
+.cal-day{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px;border:1.5px solid #ddd;background:#f5f5f5;color:#333;cursor:pointer;padding:3px 1px;min-height:46px;font-size:10px;line-height:1.2;text-align:center;position:relative;user-select:none}
+.cal-day .dl{font-weight:700;font-size:10px}
+.cal-day .dd{font-size:8px;color:#888}
+.cal-day.wknd-day{background:#fff8ee;border-color:#e8b86d;color:#7a4800}
+.cal-day.wknd-day .dd{color:#c07000}
+.cal-day.sel-drop{background:rgba(220,60,50,.2);border-color:rgba(200,40,40,.65);color:#7a1010}
+.cal-day.sel-add{background:rgba(60,140,40,.18);border-color:rgba(50,130,30,.6);color:#1a5c08}
+.cal-day.overlap{background:rgba(130,50,180,.2);border-color:rgba(110,30,160,.6);color:#4a0e7a;text-decoration:line-through}
+.cal-day.avoided{background:rgba(220,60,50,.15);border-color:rgba(200,40,40,.5);color:#7a1010}
+.cal-day.no-sel{cursor:default;opacity:.5;pointer-events:none}
+.cal-day.empty{background:transparent;border-color:transparent;cursor:default;pointer-events:none}
+.cal-day.adj-period{background:#f5eeff;border-color:#c9a0e8;color:#5a2d82}
+/* Rotation blocks */
+.rot-block{border-radius:8px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;padding:4px 6px;min-height:46px;user-select:none;border:2px solid #1a73e8;background:rgba(26,115,232,.12);color:#1558b0;overflow:hidden}
+.rot-block .rb-name{font-size:10px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rot-block .rb-range{font-size:8px;opacity:.8}
+.rot-block .rb-dow{font-size:8px;opacity:.7}
+.rot-block.sel-drop{background:rgba(220,60,50,.2);border-color:rgba(200,40,40,.7);color:#7a1010}
+.rot-block.avoided-rot{background:rgba(220,60,50,.15);border-color:rgba(200,40,40,.55);color:#7a1010}
+.rot-cont{border-radius:8px;cursor:pointer;min-height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;border:2px dashed #1a73e8;background:rgba(26,115,232,.07);color:#1a73e8;user-select:none;font-size:8px;font-weight:700;text-align:center;line-height:1.3}
+.rot-cont.sel-drop{border-color:rgba(200,40,40,.7);background:rgba(220,60,50,.12);color:#7a1010}
+.rot-cont.avoided-rot{border-color:rgba(200,40,40,.55);background:rgba(220,60,50,.1);color:#7a1010}
+/* Results */
+.result-box{border-radius:10px;padding:12px 14px;border:1px solid #ddd;background:#f7f7f7}
+.result-ok{background:#eef7e6;border-color:#4a8c1c}
+.result-no{background:#fdf0f0;border-color:#d94040}
+.result-title{font-size:17px;font-weight:800;margin-bottom:4px}
+.result-ok .result-title{color:#2a5c08}
+.result-no .result-title{color:#7a1010}
+.result-sub{font-size:13px}
+.result-ok .result-sub{color:#3a7010}
+.result-no .result-sub{color:#a03030}
+.sum-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+.sum-card{background:#f0f2f5;border-radius:8px;padding:8px 10px}
+.sum-label{font-size:10px;color:#888;margin-bottom:2px;font-weight:600;text-transform:uppercase}
+.sum-val{font-size:15px;font-weight:800}
+.tag{display:inline-block;font-size:11px;padding:3px 8px;border-radius:6px;margin:2px;border:1px solid #ddd}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:4px;vertical-align:middle}
+.badge-hol{background:#fff3d6;color:#854F0B;border:1px solid #e8b86d}
+.scan-result{border-radius:10px;padding:12px 14px;margin-bottom:8px;border:1px solid #c3e0a0;background:#eef7e6}
+.maxoff-result{border-radius:10px;padding:12px 14px;margin-bottom:8px;border:1px solid #80cbc4;background:#e0f7fa}
+.rot-card{background:#e8f0fe;border:1.5px solid #a8c4f8;border-radius:10px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.rot-label{font-size:13px;font-weight:700;color:#1558b0}
+.rot-dates{font-size:11px;color:#666;margin-top:2px}
+.saved-banner{background:#eef7e6;border:1.5px solid #4a8c1c;border-radius:10px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.sched-section{border:1.5px solid #e0e0e0;border-radius:12px;background:#fff;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden}
+.sched-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px}
+.sched-body{padding:0 16px 14px;border-top:1px solid #f0f0f0;display:none}
+.cb-row{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;cursor:pointer;min-height:36px}
+.cb-row input[type=checkbox]{width:18px;height:18px;cursor:pointer;flex-shrink:0}
+.len-cb-btn{padding:6px 12px;border-radius:8px;border:1.5px solid #ddd;background:#f5f5f5;color:#555;cursor:pointer;font-size:12px;font-weight:600;transition:all .12s;min-height:36px}
+.len-cb-btn.active{background:#1a73e8;border-color:#1558b0;color:#fff}
+.len-cb-btn.disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
+.disclaimer{font-size:11px;color:#888;background:#fff8ee;border:1px solid #e8b86d;border-radius:8px;padding:8px 10px;margin-bottom:10px;line-height:1.4}
+@media(min-width:600px){
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid-2>.card{margin-bottom:0}
+  .cal-day,.rot-block,.rot-cont{min-height:52px}
+  .cal-day .dl{font-size:11px}.cal-day .dd{font-size:9px}
+}
+@media(max-width:599px){.grid-2{display:flex;flex-direction:column;gap:10px}.grid-2>.card{margin-bottom:0}}
+</style>
+
+<div class="app-title">✈️ PCS Swap Tool</div>
+<div class="app-sub">Reserve coverage swap evaluator for PCS Swap with Pot</div>
+<div style="font-size:12px;color:#7a4800;background:#fff8ee;border:1px solid #e8b86d;border-radius:10px;padding:10px 12px;margin-bottom:12px;line-height:1.5">⚠️ <b>Disclaimer:</b> Swap approvals are never guaranteed. Reserve coverage tables refresh throughout the PCS run window, and conditions change quickly. Use this tool to focus your efforts on the most favorable swaps — always verify your final request against live iCrew data before submitting.</div>
+
+<!-- RESERVE TABLE -->
+<div class="card">
+  <div style="font-size:15px;font-weight:800;color:#333;margin-bottom:4px">Reserve Table</div>
+  <div id="saved-table-banner" style="display:none" class="saved-banner">
+    <div>
+      <div style="font-size:13px;font-weight:700;color:#2a5c08">📋 Saved table available</div>
+      <div id="saved-table-ts" style="font-size:11px;color:#3a7010"></div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="action-btn success-btn" onclick="loadSavedTable()" style="font-size:12px;padding:7px 14px">Use Saved Table</button>
+      <button class="action-btn ghost-btn" onclick="showUpdatePaste()" style="font-size:12px;padding:7px 14px">Update Table</button>
+    </div>
+  </div>
+  <div id="paste-first">
+    <textarea id="paste-area-first" placeholder="Paste Reserve Levels Table directly from iCrew..."></textarea>
+    <button class="action-btn primary-btn" onclick="loadTableFirst()" style="width:100%;margin-top:8px">Load Table</button>
+  </div>
+  <div id="paste-update" style="display:none">
+    <textarea id="paste-area-update" placeholder="Paste Reserve Levels Table directly from iCrew..."></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="action-btn primary-btn" onclick="loadTableUpdate()" style="flex:1">Load Table</button>
+      <button class="action-btn ghost-btn" onclick="cancelUpdate()" style="flex:1">Cancel</button>
+    </div>
+  </div>
+  <div id="adj-section" style="display:none;margin-top:10px;border-top:1px solid #eee;padding-top:10px">
+    <p style="font-size:12px;font-weight:700;color:#555;margin-bottom:6px">Adjacent Bid Period Levels <span style="font-weight:400;color:#888">(optional — cross-period swaps only)</span></p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+      <button class="action-btn" onclick="toggleAdjPaste('prev')" style="font-size:12px;flex:1">＋ Previous Month</button>
+      <button class="action-btn" onclick="toggleAdjPaste('next')" style="font-size:12px;flex:1">＋ Next Month</button>
+    </div>
+    <div id="prev-adj-paste" style="display:none;margin-bottom:8px">
+      <textarea id="paste-prev" placeholder="Paste previous bid period table..."></textarea>
+      <button class="action-btn success-btn" onclick="loadAdjTable('prev')" style="width:100%;margin-top:6px;font-size:12px">Load Previous Month</button>
+    </div>
+    <div id="next-adj-paste" style="display:none">
+      <textarea id="paste-next" placeholder="Paste next bid period table..."></textarea>
+      <button class="action-btn success-btn" onclick="loadAdjTable('next')" style="width:100%;margin-top:6px;font-size:12px">Load Next Month</button>
+    </div>
+  </div>
+  <p id="load-status" style="font-size:11px;color:#888;margin-top:6px"></p>
+</div>
+
+<!-- MY SCHEDULE -->
+<div class="sched-section">
+  <div class="sched-header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:18px">🗓</span>
+      <div>
+        <div style="font-size:14px;font-weight:700;color:#333">My Schedule</div>
+        <div id="sched-sub" style="font-size:11px;color:#888">Add your current rotations</div>
+      </div>
+    </div>
+    <button class="action-btn primary-btn" id="sched-toggle-btn" onclick="toggleSchedBody()" style="font-size:12px;padding:7px 14px">Add Schedule</button>
+  </div>
+  <div class="sched-body" id="sched-body">
+    <div id="schedule-list" style="margin-bottom:10px"></div>
+    <div style="border-top:1px solid #eee;padding-top:10px">
+      <p style="font-size:13px;font-weight:700;color:#333;margin-bottom:4px">Add a Rotation</p>
+      <p style="font-size:12px;color:#888;margin-bottom:8px">Select the first day, then choose rotation length</p>
+      <div id="sched-cal-placeholder" style="font-size:12px;color:#aaa;padding:12px 0;text-align:center;display:none">Load the reserve table first to see the calendar.</div>
+      <div class="cal-wrap"><div id="sched-add-cal"></div></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0">
+        <button class="action-btn" onclick="setSchedLen(1)" id="slb1" style="min-width:48px">1d</button>
+        <button class="action-btn" onclick="setSchedLen(2)" id="slb2" style="min-width:48px">2d</button>
+        <button class="action-btn" onclick="setSchedLen(3)" id="slb3" style="min-width:48px">3d</button>
+        <button class="action-btn" onclick="setSchedLen(4)" id="slb4" style="min-width:48px">4d</button>
+        <button class="action-btn" onclick="setSchedLen(5)" id="slb5" style="min-width:48px">5d</button>
+      </div>
+      <button class="action-btn success-btn" onclick="addSchedRot()" style="width:100%;margin-bottom:8px">＋ Add Rotation</button>
+      <button class="action-btn primary-btn" onclick="saveSchedAndCollapse()" style="width:100%">✓ Save Schedule</button>
+    </div>
+  </div>
+</div>
+
+<div id="main" style="display:none">
+
+<div class="card">
+  <div style="font-size:15px;font-weight:800;color:#333;margin-bottom:8px">Reserve Coverage</div>
+  <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table id="cov-table"></table></div>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('checker')" id="tab-checker">Will it Swap</button>
+  <button class="tab-btn" onclick="switchTab('scanner')" id="tab-scanner">Trade Finder</button>
+  <button class="tab-btn" onclick="switchTab('maxoff')" id="tab-maxoff">Max Days Off</button>
+</div>
+
+<!-- ══ WILL IT SWAP ══ -->
+<div id="pane-checker">
+  <div class="section-desc">Check specific calendar days to see if a PCS Swap with Pot request will be approved based on current reserve coverage.</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="step-label"><span class="step-num">1</span>Rotations to Drop</div>
+      <div class="step-desc">Tap a rotation block to drop all its days. Dropped days become available to add in step 2.</div>
+      <div class="cal-wrap"><div id="drop-cal"></div></div>
+    </div>
+    <div class="card">
+      <div class="step-label"><span class="step-num">2</span>Days to Add</div>
+      <div class="step-desc">Tap individual days to pick up. Dropped rotation days are now open. Your other working days cannot be added.</div>
+      <div class="cal-wrap"><div id="add-cal"></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="step-label" style="margin-bottom:8px"><span class="step-num">3</span>Breakdown</div>
+    <div id="breakdown" style="font-size:12px;color:#888">Select days above to see breakdown.</div>
+    <div class="sum-grid" id="sum-grid" style="display:none">
+      <div class="sum-card"><p class="sum-label">Drop neg sum</p><p class="sum-val" id="s-drop">—</p></div>
+      <div class="sum-card"><p class="sum-label">Add neg sum</p><p class="sum-val" id="s-add">—</p></div>
+      <div class="sum-card"><p class="sum-label">Method</p><p class="sum-val" id="s-method" style="font-size:11px">—</p></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="step-label" style="margin-bottom:8px"><span class="step-num">4</span>Verdict</div>
+    <div id="result-box" class="result-box">
+      <p class="result-title" id="result-title" style="color:#999">Awaiting input</p>
+      <p class="result-sub" id="result-sub" style="color:#aaa">Select days to evaluate</p>
+    </div>
+    <button class="action-btn" onclick="clearChecker()" style="margin-top:10px;width:100%">Clear Selection</button>
+  </div>
+</div>
+
+<!-- ══ TRADE FINDER ══ -->
+<div id="pane-scanner" style="display:none">
+  <div class="section-desc">Find available rotations to pick up and reduce your total days worked this bid period.</div>
+
+  <div class="card">
+    <div class="step-label"><span class="step-num">1</span>Select Rotation to Drop</div>
+    <div class="step-desc">Tap a rotation block to drop it. Those days become free individual days on the avoid calendar.</div>
+    <div class="cal-wrap"><div id="scan-drop-cal"></div></div>
+    <div id="scan-drop-summary" style="font-size:12px;color:#888;margin-top:8px;font-weight:600">No days selected.</div>
+  </div>
+
+  <div class="card">
+    <div class="step-label"><span class="step-num">2</span>Scanner Mode</div>
+    <div class="step-desc">Choose how to find replacement rotations.</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <label style="display:flex;align-items:flex-start;gap:10px;font-size:13px;min-height:44px;cursor:pointer">
+        <input type="radio" name="scan-mode" value="single" checked onchange="updateScannerUI()" style="width:18px;height:18px;margin-top:2px;flex-shrink:0">
+        <div><div style="font-weight:700">Single Rotation</div><div style="font-size:11px;color:#888">One consecutive rotation</div></div>
+      </label>
+      <label style="display:flex;align-items:flex-start;gap:10px;font-size:13px;min-height:44px;cursor:pointer">
+        <input type="radio" name="scan-mode" value="combo" onchange="updateScannerUI()" style="width:18px;height:18px;margin-top:2px;flex-shrink:0">
+        <div><div style="font-weight:700">Combination</div><div style="font-size:11px;color:#888">Multiple rotations to pick up</div></div>
+      </label>
+    </div>
+  </div>
+
+  <!-- SINGLE OPTIONS -->
+  <div class="card" id="single-options">
+    <div class="step-label"><span class="step-num">3</span>Target Rotation Length</div>
+    <div class="step-desc">How many days for your replacement rotation?</div>
+    <select id="single-length"><option value="0">— Select drop days first —</option></select>
+  </div>
+
+  <!-- COMBO OPTIONS -->
+  <div class="card" id="combo-options" style="display:none">
+    <div class="step-label"><span class="step-num">3</span>Combination Options</div>
+
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div>
+        <p style="font-size:12px;font-weight:700;color:#555;margin-bottom:6px">NUMBER OF ROTATIONS TO PICK UP</p>
+        <select id="combo-rot-count" onchange="updateComboLenChecks()">
+          <option value="2">2 rotations</option>
+          <option value="3" selected>3 rotations</option>
+          <option value="4">4 rotations</option>
+        </select>
+      </div>
+      <div>
+        <p style="font-size:12px;font-weight:700;color:#555;margin-bottom:6px">MAX TOTAL DAYS TO PICK UP</p>
+        <select id="combo-max-days" onchange="updateComboLenChecks()"><option value="0">— Select drop days first —</option></select>
+      </div>
+      <div>
+        <p style="font-size:12px;font-weight:700;color:#555;margin-bottom:6px">INCLUDE ROTATION LENGTHS</p>
+
+        <div id="combo-len-checks" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="step-label"><span class="step-num">4</span>Days to Avoid</div>
+    <div class="step-desc">Your kept working days are pre-avoided. Dropped rotation days are now open — tap to re-avoid any. Use the button to avoid all weekends.</div>
+    <button class="action-btn" id="avoid-wknd-btn" onclick="toggleAvoidWeekends()" style="width:100%;margin-bottom:10px">🗓 Avoid All Weekends</button>
+    <div class="cal-wrap"><div id="avoid-cal"></div></div>
+  </div>
+
+  <button class="action-btn primary-btn" onclick="runScanner()" style="width:100%;margin-bottom:10px;font-size:14px;padding:14px">🔍 Scan for Valid Trades</button>
+  <div id="scan-results"></div>
+</div>
+
+<!-- ══ MAX DAYS OFF ══ -->
+<div id="pane-maxoff" style="display:none">
+  <div class="section-desc">Select rotations you want to try dropping. The tool finds the top 5 combinations of pickup days that maximize your time off while satisfying reserve coverage math.</div>
+  <div class="disclaimer">⏳ Processing may take a moment for larger schedules. Results are sorted by fewest days worked.</div>
+
+  <div class="card">
+    <div class="step-label"><span class="step-num">1</span>Select Rotations to Drop</div>
+    <div class="step-desc">Choose which of your scheduled rotations you want to try dropping. Rotations you keep will be treated as unavailable days.</div>
+    <div id="maxoff-rot-list"><p style="font-size:12px;color:#888">Add rotations to My Schedule first.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="step-label"><span class="step-num">2</span>Days to Avoid</div>
+    <div class="step-desc">Tap any days you want guaranteed off — these will never appear as pickup days in results.</div>
+    <button class="action-btn" id="maxoff-wknd-btn" onclick="toggleMaxOffWeekends()" style="width:100%;margin-bottom:10px">🗓 Avoid All Weekends</button>
+    <div class="cal-wrap"><div id="maxoff-avoid-cal"></div></div>
+  </div>
+
+  <button class="action-btn teal-btn" onclick="runMaxDaysOff()" style="width:100%;margin-bottom:10px;font-size:14px;padding:14px">★ Find Max Days Off</button>
+  <div id="maxoff-results"></div>
+</div>
+
+</div><!-- #main -->
+
+<script>
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let reserveData=[],adjPrevData=[],adjNextData=[],allDates=[],covMap={};
+let baseYear=new Date().getFullYear(),loadTime=null;
+let myRotations=[];
+const dropSel=new Set(),addSel=new Set(),scanDropSel=new Set(),avoidSel=new Set();
+const maxoffAvoidSel=new Set();
+let schedStartDay=null,schedLen=1,schedBodyOpen=false;
+let avoidWeekendsActive=false,maxoffWeekendsActive=false;
+
+const MONTH_MAP={JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11};
+const MN=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+const DOW=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+
+// ── DATE UTILS ──────────────────────────────────
+function parseDate(s){const m=s.match(/^(\d{2})([A-Z]{3})$/);return m?{day:parseInt(m[1]),month:MONTH_MAP[m[2]]}:null;}
+function toJsDate(l){const p=parseDate(l);return p?new Date(baseYear,p.month,p.day):null;}
+function getDOW(l){const d=toJsDate(l);return d?DOW[d.getDay()]:'???';}
+function isWeekend(l){const d=toJsDate(l);return d?d.getDay()===0||d.getDay()===6:false;}
+function getStartDOW(l){const d=toJsDate(l);return d?d.getDay():0;}
+function labelFromJsDate(d){return String(d.getDate()).padStart(2,'0')+MN[d.getMonth()];}
+function guessYear(labels){const now=new Date(),yr=now.getFullYear(),first=parseDate(labels[0]);if(!first)return yr;const d=new Date(yr,first.month,first.day);return d<new Date(now-90*864e5)?yr+1:yr;}
+function getWorkingDays(){const s=new Set();myRotations.forEach(t=>t.days.forEach(d=>s.add(d)));return s;}
+function isMainPeriod(l){return reserveData.some(r=>r.date===l);}
+function sortRotations(){myRotations.sort((a,b)=>{const pa=parseDate(a.days[0]),pb=parseDate(b.days[0]);if(!pa||!pb)return 0;return new Date(baseYear,pa.month,pa.day)-new Date(baseYear,pb.month,pb.day);});}
+
+// ── HOLIDAYS ────────────────────────────────────
+function getEaster(y){const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31)-1,dy=(h+l-7*m+114)%31+1;return new Date(y,mo,dy);}
+function getSuperBowl(y){let d=new Date(y,1,1);while(d.getDay()!==0)d.setDate(d.getDate()+1);d.setDate(d.getDate()+7);return d;}
+function getMemorialDay(y){let d=new Date(y,4,31);while(d.getDay()!==1)d.setDate(d.getDate()-1);return d;}
+function getLaborDay(y){let d=new Date(y,8,1);while(d.getDay()!==1)d.setDate(d.getDate()+1);return d;}
+function getThanksgiving(y){let d=new Date(y,10,1),c=0;while(c<4){if(d.getDay()===4)c++;if(c<4)d.setDate(d.getDate()+1);}return d;}
+function getHolidays(y){const e=getEaster(y),gf=new Date(e);gf.setDate(e.getDate()-2);return[new Date(y,0,1),getSuperBowl(y),gf,e,getMemorialDay(y),new Date(y,6,4),getLaborDay(y),getThanksgiving(y),new Date(y,11,25)];}
+function isAPD(l){const p=parseDate(l);if(!p)return false;for(let yr=baseYear-1;yr<=baseYear+1;yr++){for(const h of getHolidays(yr)){const ws=new Date(h);ws.setDate(h.getDate()-2);const we=new Date(h);we.setDate(h.getDate()+1);const t=new Date(baseYear,p.month,p.day);if(t>=ws&&t<=we)return true;}}return false;}
+
+// ── LOCAL STORAGE ────────────────────────────────
+function saveRots(){try{localStorage.setItem('pcs_rots',JSON.stringify(myRotations));}catch(e){}}
+function loadRotsLS(){try{const d=localStorage.getItem('pcs_rots');return d?JSON.parse(d):[]; }catch(e){return[];}}
+function saveTableLS(raw,key){try{localStorage.setItem('pcs_table_'+key,raw);if(key==='main')localStorage.setItem('pcs_table_ts',new Date().toISOString());}catch(e){}}
+function loadTableLS(key){try{return localStorage.getItem('pcs_table_'+key);}catch(e){return null;}}
+
+// ── INIT ────────────────────────────────────────
+window.addEventListener('load',()=>{
+  myRotations=loadRotsLS();sortRotations();updateSchedSub();
+  const raw=loadTableLS('main'),ts=localStorage.getItem('pcs_table_ts');
+  if(raw&&ts){
+    const saved=new Date(ts);
+    document.getElementById('saved-table-ts').textContent=`Last updated: ${saved.toLocaleDateString([],{month:'short',day:'numeric'})} ${saved.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`;
+    document.getElementById('saved-table-banner').style.display='flex';
+    document.getElementById('paste-first').style.display='none';
+  }
+  updateSchedCalVisibility();
+});
+
+function updateSchedCalVisibility(){
+  const ph=document.getElementById('sched-cal-placeholder');
+  const calEl=document.getElementById('sched-add-cal');
+  if(!reserveData.length){if(ph)ph.style.display='block';if(calEl)calEl.innerHTML='';}
+  else{if(ph)ph.style.display='none';}
+}
+
+// ── ADJ TABLES ──────────────────────────────────
+function toggleAdjPaste(w){const el=document.getElementById(w==='prev'?'prev-adj-paste':'next-adj-paste');el.style.display=el.style.display==='none'?'block':'none';}
+function loadAdjTable(w){
+  const raw=document.getElementById(w==='prev'?'paste-prev':'paste-next').value;
+  const data=parseLines(raw.split('\n').filter(l=>l.trim()));
+  if(!data.length){alert('Could not parse table.');return;}
+  saveTableLS(raw,w);
+  if(w==='prev')adjPrevData=data;else adjNextData=data;
+  data.forEach(r=>{covMap[r.date]=r.avail-r.reqd;});
+  rebuildAllDates();refreshAllCals();
+  document.getElementById(w==='prev'?'prev-adj-paste':'next-adj-paste').style.display='none';
+}
+function rebuildAllDates(){allDates=[...adjPrevData.slice(-4),...reserveData,...adjNextData.slice(0,4)];}
+
+// ── SCHEDULE ────────────────────────────────────
+function toggleSchedBody(){
+  schedBodyOpen=!schedBodyOpen;
+  document.getElementById('sched-body').style.display=schedBodyOpen?'block':'none';
+  const btn=document.getElementById('sched-toggle-btn');
+  if(schedBodyOpen){btn.textContent='▲ Collapse';btn.className='action-btn ghost-btn';updateSchedCalVisibility();if(reserveData.length)buildSchedAddCal();}
+  else updateSchedToggleBtn();
+}
+function updateSchedToggleBtn(){const btn=document.getElementById('sched-toggle-btn');if(myRotations.length){btn.textContent='✏️ Edit';btn.className='action-btn ghost-btn';}else{btn.textContent='Add Schedule';btn.className='action-btn primary-btn';}}
+function updateSchedSub(){const el=document.getElementById('sched-sub');if(!myRotations.length){el.textContent='Add your current rotations';return;}el.textContent=myRotations.map(t=>t.name).join(' · ');updateSchedToggleBtn();}
+function saveSchedAndCollapse(){
+  saveRots();schedBodyOpen=false;
+  document.getElementById('sched-body').style.display='none';
+  updateSchedSub();updateSchedToggleBtn();renderScheduleList();
+  if(reserveData.length){refreshAllCals();rebuildAvoidForSchedule();}
+  renderMaxOffRotList();
+}
+function buildSchedAddCal(){if(!reserveData.length)return;buildCalendarInto(document.getElementById('sched-add-cal'),'sched-add');}
+function setSchedLen(n){schedLen=n;updateLenBtns('slb',n);}
+function updateLenBtns(prefix,n){for(let i=1;i<=5;i++){const b=document.getElementById(prefix+i);if(b)b.className='action-btn'+(i===n?' primary-btn':'');}}
+function addSchedRot(){
+  if(!schedStartDay){alert('Select a start day on the calendar first.');return;}
+  addRotObj(schedStartDay,schedLen);schedStartDay=null;sortRotations();renderScheduleList();
+  updateLenBtns('slb',1);schedLen=1;
+  if(reserveData.length){refreshAllCals();buildSchedAddCal();}
+  renderMaxOffRotList();
+}
+function removeRot(idx){
+  myRotations.splice(idx,1);sortRotations();saveRots();updateSchedSub();renderScheduleList();
+  if(reserveData.length){refreshAllCals();rebuildAvoidForSchedule();buildSchedAddCal();}
+  renderMaxOffRotList();
+}
+function addRotObj(startLabel,len){
+  const p=parseDate(startLabel);if(!p)return;
+  const days=[];for(let i=0;i<len;i++){const d=new Date(baseYear,p.month,p.day+i);days.push(labelFromJsDate(d));}
+  myRotations.push({name:`${MN[p.month]}${String(p.day).padStart(2,'0')}/${len}-day`,days});
+}
+function renderScheduleList(){
+  const el=document.getElementById('schedule-list');
+  if(!myRotations.length){el.innerHTML='<p style="font-size:12px;color:#888;margin-bottom:6px">No rotations saved. Add rotations below.</p>';return;}
+  el.innerHTML=myRotations.map((t,i)=>`<div class="rot-card"><div><div class="rot-label">✈️ ${t.name}</div><div class="rot-dates">${t.days.join(', ')}</div></div><button class="action-btn danger-btn" onclick="removeRot(${i})" style="font-size:11px;padding:5px 10px;min-height:32px">✕</button></div>`).join('');
+}
+
+// ── AVOID ────────────────────────────────────────
+// avoidSel is strictly driven by user taps + kept working days
+// When scan drop changes, rebuild: kept working days go in, dropped days come out as plain days
+function rebuildAvoidForSchedule(){
+  avoidSel.clear();
+  getWorkingDays().forEach(d=>{if(!scanDropSel.has(d))avoidSel.add(d);});
+  buildCalendarInto(document.getElementById('avoid-cal'),'avoid');
+}
+function syncAvoidWithScanDrop(){
+  // Remove scanDrop days from avoid, keep everything else
+  const wd=getWorkingDays();
+  avoidSel.clear();
+  wd.forEach(d=>{if(!scanDropSel.has(d))avoidSel.add(d);});
+  if(avoidWeekendsActive)allDates.forEach(r=>{if(isWeekend(r.date))avoidSel.add(r.date);});
+  buildCalendarInto(document.getElementById('avoid-cal'),'avoid');
+}
+
+// ── LOAD TABLE ───────────────────────────────────
+function parseLines(lines){return lines.map(l=>{const p=l.trim().split(/[\s\t]+/);if(p.length<3)return null;const date=p[0].toUpperCase(),reqd=parseInt(p[1]),avail=parseInt(p[2]);return date.match(/^\d{2}[A-Z]{3}$/)&&!isNaN(reqd)&&!isNaN(avail)?{date,reqd,avail}:null;}).filter(Boolean);}
+function showUpdatePaste(){document.getElementById('paste-area-update').value='';document.getElementById('paste-update').style.display='block';}
+function cancelUpdate(){document.getElementById('paste-update').style.display='none';}
+function loadTableFirst(){processTableLoad(document.getElementById('paste-area-first').value);}
+function loadTableUpdate(){processTableLoad(document.getElementById('paste-area-update').value);document.getElementById('paste-update').style.display='none';}
+function processTableLoad(raw){
+  const lines=raw.split('\n').filter(l=>l.trim());
+  reserveData=parseLines(lines);
+  if(!reserveData.length){alert('Could not parse rows.\nUse format: 01AUG 30 25');return;}
+  saveTableLS(raw,'main');loadTime=new Date();
+  baseYear=guessYear(reserveData.map(r=>r.date));
+  covMap={};reserveData.forEach(r=>{covMap[r.date]=r.avail-r.reqd;});
+  const pr=loadTableLS('prev'),nr=loadTableLS('next');
+  if(pr){adjPrevData=parseLines(pr.split('\n').filter(l=>l.trim()));adjPrevData.forEach(r=>{covMap[r.date]=r.avail-r.reqd;});}
+  if(nr){adjNextData=parseLines(nr.split('\n').filter(l=>l.trim()));adjNextData.forEach(r=>{covMap[r.date]=r.avail-r.reqd;});}
+  rebuildAllDates();
+  const label=loadTime.toLocaleDateString([],{month:'short',day:'numeric'})+' '+loadTime.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('saved-table-ts').textContent=`Last updated: ${label}`;
+  document.getElementById('saved-table-banner').style.display='flex';
+  document.getElementById('paste-first').style.display='none';
+  document.getElementById('adj-section').style.display='block';
+  finishLoad();
+}
+function loadSavedTable(){
+  const raw=loadTableLS('main');if(!raw)return;
+  const lines=raw.split('\n').filter(l=>l.trim());
+  reserveData=parseLines(lines);if(!reserveData.length){alert('Saved table could not be parsed.');return;}
+  loadTime=new Date(localStorage.getItem('pcs_table_ts')||new Date());
+  baseYear=guessYear(reserveData.map(r=>r.date));
+  covMap={};reserveData.forEach(r=>{covMap[r.date]=r.avail-r.reqd;});
+  const pr=loadTableLS('prev'),nr=loadTableLS('next');
+  if(pr){adjPrevData=parseLines(pr.split('\n').filter(l=>l.trim()));adjPrevData.forEach(r=>{covMap[r.date]=r.avail-r.reqd;});}
+  if(nr){adjNextData=parseLines(nr.split('\n').filter(l=>l.trim()));adjNextData.forEach(r=>{covMap[r.date]=r.avail-r.reqd;});}
+  rebuildAllDates();document.getElementById('adj-section').style.display='block';finishLoad();
+}
+function finishLoad(){
+  dropSel.clear();addSel.clear();scanDropSel.clear();avoidSel.clear();
+  document.getElementById('main').style.display='block';
+  const hhmm=loadTime?loadTime.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
+  document.getElementById('load-status').textContent=`✅ ${reserveData.length} days loaded${hhmm?' at '+hhmm:''}`;
+  sortRotations();buildCovTable();refreshAllCals();renderScheduleList();
+  updateSchedCalVisibility();if(schedBodyOpen)buildSchedAddCal();
+  rebuildAvoidForSchedule();evaluate();updateLengthOptions();
+  document.getElementById('scan-results').innerHTML='';
+  renderMaxOffRotList();
+  buildCalendarInto(document.getElementById('maxoff-avoid-cal'),'maxoff-avoid');
+}
+function refreshAllCals(){
+  buildCalendarInto(document.getElementById('drop-cal'),'drop');
+  buildCalendarInto(document.getElementById('add-cal'),'add');
+  buildCalendarInto(document.getElementById('scan-drop-cal'),'scan-drop');
+  buildCalendarInto(document.getElementById('avoid-cal'),'avoid');
+}
+
+// ── COVERAGE TABLE ───────────────────────────────
+function buildCovTable(){
+  const table=document.getElementById('cov-table');
+  const rows=[...adjPrevData.slice(-4),...reserveData,...adjNextData.slice(0,4)];
+  let html='<tr><th class="cov-th">Date</th>';
+  rows.forEach(r=>{const adj=!isMainPeriod(r.date);html+=`<th class="cov-th"${adj?' style="background:#f0e8ff;color:#5a2d82"':''}>${r.date}<br><span style="font-weight:400;font-size:8px">${getDOW(r.date)}</span></th>`;});
+  html+='</tr>';
+  [['Reqd',r=>r.reqd],['Avail',r=>r.avail],['Cov',r=>{const c=covMap[r.date]!==undefined?covMap[r.date]:r.avail-r.reqd;const col=c<0?'#d94040':c===0?'#999':'#4a8c1c';return`<span style="color:${col};font-weight:700">${c}</span>`;}]].forEach(([lbl,fn])=>{
+    html+=`<tr><td class="cov-td" style="font-weight:700;background:#f5f7ff;color:#666">${lbl}</td>`;
+    rows.forEach(r=>{const adj=!isMainPeriod(r.date);html+=`<td class="cov-td"${adj?' style="background:#f8f0ff;color:#5a2d82"':''}>${fn(r)}</td>`;});html+='</tr>';
+  });
+  table.innerHTML=html;
+}
+
+// ── TAB ─────────────────────────────────────────
+function switchTab(tab){
+  ['checker','scanner','maxoff'].forEach(t=>{
+    document.getElementById('pane-'+t).style.display=t===tab?'block':'none';
+    document.getElementById('tab-'+t).className='tab-btn'+(t===tab?' active':'');
+  });
+  if(tab==='maxoff'){buildCalendarInto(document.getElementById('maxoff-avoid-cal'),'maxoff-avoid');}
+}
+
+// ═══════════════════════════════════════════════
+// CALENDAR BUILDER
+// ═══════════════════════════════════════════════
+function buildCalendarInto(container,mode){
+  if(!container)return;container.innerHTML='';
+  const dates=allDates.length?allDates:reserveData;
+  if(!dates.length)return;
+  const wd=getWorkingDays();
+
+  // Map: date -> rotation
+  const rotDayMap={};
+  myRotations.forEach(t=>t.days.forEach(d=>{if(!rotDayMap[d])rotDayMap[d]=t;}));
+
+  // Which days are currently dropped (scanner)
+  // In 'add' mode: dropped rotation days are NOT working, they're free
+  // In 'avoid' mode: dropped rotation days are NOT avoided (shown as open days)
+
+  // DOW header
+  const hdr=document.createElement('div');hdr.className='cal-header';
+  ['SUN','MON','TUE','WED','THU','FRI','SAT'].forEach((d,i)=>{const c=document.createElement('div');c.className='cal-dow'+(i===0||i===6?' wknd':'');c.textContent=d;hdr.appendChild(c);});
+  container.appendChild(hdr);
+
+  // Build slots
+  const firstDOW=getStartDOW(dates[0].date);
+  const slots=[];
+  for(let i=0;i<firstDOW;i++)slots.push(null);
+  dates.forEach(r=>slots.push(r));
+  while(slots.length%7!==0)slots.push(null);
+
+  const wrap=document.createElement('div');wrap.style.cssText='display:flex;flex-direction:column;gap:3px';
+
+  for(let rowStart=0;rowStart<slots.length;rowStart+=7){
+    const rowEl=document.createElement('div');rowEl.className='cal-row';
+    let col=0;
+    while(col<7){
+      const slot=slots[rowStart+col];
+      if(!slot){const e=document.createElement('div');e.className='cal-day empty';rowEl.appendChild(e);col++;continue;}
+      const label=slot.date;
+      const rot=rotDayMap[label];
+      const isAdj=!isMainPeriod(label);
+
+      // Determine if this day's rotation is currently "dropped" (selected to drop)
+      const rotIsDropped=rot&&rot.days.every(d=>
+        mode==='drop'?dropSel.has(d):mode==='scan-drop'?scanDropSel.has(d):false
+      );
+
+      // In 'add' mode: show rotation as plain day if it's been dropped; show non-selectable if it's a kept working day
+      // In 'avoid' mode: show rotation as plain (open) day if it's been dropped (scan-drop)
+      const showAsPlainDay=(
+        (mode==='add'&&rot&&rotIsDropped)||       // dropped rot days are free to add
+        (mode==='add'&&rot&&!rotIsDropped&&!dropSel.has(label))||  // kept rot days — handled below as no-sel
+        (mode==='avoid'&&rot&&scanDropSel.has(label))  // dropped days become plain avoidable days
+      );
+
+      // For add calendar: kept (non-dropped) rotations show as dimmed rot blocks
+      if(mode==='add'&&rot&&!rot.days.every(d=>dropSel.has(d))){
+        const dayIdx=rot.days.indexOf(label);
+        const isFirstInRow=dayIdx===0||col===0;
+        if(isFirstInRow){
+          let span=0;
+          for(let c2=col;c2<7;c2++){const s2=slots[rowStart+c2];if(s2&&rotDayMap[s2.date]===rot)span++;else break;}
+          const block=document.createElement('div');
+          block.className='rot-block';
+          block.style.gridColumn='span '+span;
+          block.style.opacity='0.5';block.style.cursor='default';block.style.pointerEvents='none';
+          if(isAdj)block.style.borderColor='#c9a0e8';
+          block.innerHTML='<div class="rb-name">✈️ '+rot.name+'</div><div class="rb-range">'+rot.days[0]+'–'+rot.days[rot.days.length-1]+'</div><div class="rb-dow">'+getDOW(rot.days[0])+'–'+getDOW(rot.days[rot.days.length-1])+'</div>';
+          rowEl.appendChild(block);col+=span;
+        } else {
+          const cont=document.createElement('div');
+          cont.className='rot-cont';
+          cont.style.opacity='0.5';cont.style.cursor='default';cont.style.pointerEvents='none';
+          if(isAdj)cont.style.borderColor='#c9a0e8';
+          cont.textContent='◀ '+rot.name+' '+label;
+          rowEl.appendChild(cont);col++;
+        }
+        continue;
+      }
+
+      // For avoid calendar: if rotation exists and NOT in scanDropSel -> show as avoided rot-block
+      if(mode==='avoid'&&rot&&!rot.days.some(d=>scanDropSel.has(d))){
+        const dayIdx=rot.days.indexOf(label);
+        const isFirstInRow=dayIdx===0||col===0;
+        if(isFirstInRow){
+          let span=0;
+          for(let c2=col;c2<7;c2++){const s2=slots[rowStart+c2];if(s2&&rotDayMap[s2.date]===rot)span++;else break;}
+          const block=buildRotBlock(rot,span,mode,isAdj);
+          rowEl.appendChild(block);col+=span;
+        } else {
+          const cont=buildRotCont(rot,label,mode,isAdj);
+          rowEl.appendChild(cont);col++;
+        }
+        continue;
+      }
+
+      // For sched-add calendar: show existing rotations as dimmed non-selectable blocks
+      if(mode==='sched-add'&&rot){
+        const dayIdx=rot.days.indexOf(label);
+        const isFirstInRow=dayIdx===0||col===0;
+        if(isFirstInRow){
+          let span=0;
+          for(let c2=col;c2<7;c2++){const s2=slots[rowStart+c2];if(s2&&rotDayMap[s2.date]===rot)span++;else break;}
+          const block=document.createElement('div');
+          block.className='rot-block';
+          block.style.gridColumn='span '+span;
+          block.style.opacity='0.6';block.style.cursor='default';block.style.pointerEvents='none';
+          if(isAdj)block.style.borderColor='#c9a0e8';
+          block.innerHTML='<div class="rb-name">✈️ '+rot.name+'</div><div class="rb-range">'+rot.days[0]+'–'+rot.days[rot.days.length-1]+'</div><div class="rb-dow">'+getDOW(rot.days[0])+'–'+getDOW(rot.days[rot.days.length-1])+'</div>';
+          rowEl.appendChild(block);col+=span;
+        } else {
+          const cont=document.createElement('div');
+          cont.className='rot-cont';
+          cont.style.opacity='0.6';cont.style.cursor='default';cont.style.pointerEvents='none';
+          if(isAdj)cont.style.borderColor='#c9a0e8';
+          cont.textContent='◀ '+rot.name+' '+label;
+          rowEl.appendChild(cont);col++;
+        }
+        continue;
+      }
+
+      // For drop/scan-drop calendars: show rotation blocks
+      if((mode==='drop'||mode==='scan-drop')&&rot){
+        const dayIdx=rot.days.indexOf(label);
+        const isFirstInRow=dayIdx===0||col===0;
+        if(isFirstInRow){
+          let span=0;
+          for(let c2=col;c2<7;c2++){const s2=slots[rowStart+c2];if(s2&&rotDayMap[s2.date]===rot)span++;else break;}
+          const block=buildRotBlock(rot,span,mode,isAdj);
+          rowEl.appendChild(block);col+=span;
+        } else {
+          const cont=buildRotCont(rot,label,mode,isAdj);
+          rowEl.appendChild(cont);col++;
+        }
+        continue;
+      }
+
+      // Plain day cell
+      const cell=buildDayCell(slot,mode,isAdj,wd);
+      rowEl.appendChild(cell);col++;
+    }
+    wrap.appendChild(rowEl);
+  }
+  container.appendChild(wrap);
+}
+
+function buildRotBlock(rot,span,mode,isAdj){
+  const block=document.createElement('div');
+  block.className='rot-block';
+  block.style.gridColumn=`span ${span}`;
+  if(isAdj)block.style.borderColor='#c9a0e8';
+
+  const allDropSel=rot.days.every(d=>mode==='drop'?dropSel.has(d):mode==='scan-drop'?scanDropSel.has(d):false);
+  const allAvoided=rot.days.every(d=>avoidSel.has(d));
+  if(allDropSel)block.classList.add('sel-drop');
+  if(mode==='avoid'&&allAvoided)block.classList.add('avoided-rot');
+
+  const dayIdx=rot.days.indexOf(rot.days[0]);
+  const isFirstDay=true;
+  const firstInBlock=rot.days[0];
+  const lastInBlock=rot.days[rot.days.length-1];
+  block.innerHTML=`<div class="rb-name">✈️ ${rot.name}</div><div class="rb-range">${firstInBlock}–${lastInBlock}</div><div class="rb-dow">${getDOW(firstInBlock)}–${getDOW(lastInBlock)}</div>`;
+  block.onclick=(e)=>{e.stopPropagation();handleRotClick(rot,mode);};
+  return block;
+}
+
+function buildRotCont(rot,label,mode,isAdj){
+  const cont=document.createElement('div');
+  cont.className='rot-cont';
+  if(isAdj)cont.style.borderColor='#c9a0e8';
+  const allDropSel=rot.days.every(d=>mode==='drop'?dropSel.has(d):mode==='scan-drop'?scanDropSel.has(d):false);
+  if(allDropSel)cont.classList.add('sel-drop');
+  cont.innerHTML=`◀ ${rot.name}<br>${label}`;
+  cont.onclick=(e)=>{e.stopPropagation();handleRotClick(rot,mode);};
+  return cont;
+}
+
+function handleRotClick(rot,mode){
+  if(mode==='drop'){
+    const allSel=rot.days.every(d=>dropSel.has(d));
+    rot.days.forEach(d=>allSel?dropSel.delete(d):dropSel.add(d));
+    buildCalendarInto(document.getElementById('drop-cal'),'drop');
+    buildCalendarInto(document.getElementById('add-cal'),'add');
+    evaluate();
+  } else if(mode==='scan-drop'){
+    const allSel=rot.days.every(d=>scanDropSel.has(d));
+    rot.days.forEach(d=>allSel?scanDropSel.delete(d):scanDropSel.add(d));
+    syncAvoidWithScanDrop();
+    buildCalendarInto(document.getElementById('scan-drop-cal'),'scan-drop');
+    updateScanDropSummary();updateLengthOptions();
+  } else if(mode==='avoid'){
+    const allSel=rot.days.every(d=>avoidSel.has(d));
+    rot.days.forEach(d=>allSel?avoidSel.delete(d):avoidSel.add(d));
+    buildCalendarInto(document.getElementById('avoid-cal'),'avoid');
+  }
+}
+
+function buildDayCell(r,mode,isAdj,wd){
+  const label=r.date;
+  const dow=getDOW(label);
+  const wknd=dow==='SAT'||dow==='SUN';
+  const isWorking=wd.has(label);
+  const cell=document.createElement('div');
+  let cls='cal-day';
+  if(isAdj)cls+=' adj-period';
+  else if(mode==='drop'){
+    if(dropSel.has(label)&&addSel.has(label))cls+=' overlap';
+    else if(dropSel.has(label))cls+=' sel-drop';
+    else if(wknd)cls+=' wknd-day';
+  } else if(mode==='add'){
+    // Only non-working days or dropped days reach here
+    if(dropSel.has(label)&&addSel.has(label))cls+=' overlap';
+    else if(addSel.has(label))cls+=' sel-add';
+    else if(wknd)cls+=' wknd-day';
+  } else if(mode==='scan-drop'){
+    if(scanDropSel.has(label))cls+=' sel-drop';
+    else if(wknd)cls+=' wknd-day';
+  } else if(mode==='avoid'){
+    // Plain days in avoid — either free non-working days or dropped rotation days
+    if(avoidSel.has(label))cls+=' avoided';
+    else if(wknd)cls+=' wknd-day';
+  } else if(mode==='sched-add'){
+    if(schedStartDay===label)cls+=' sel-drop';
+    else if(wknd)cls+=' wknd-day';
+  } else if(mode==='maxoff-avoid'){
+    if(maxoffAvoidSel.has(label))cls+=' avoided';
+    else if(wknd)cls+=' wknd-day';
+  }
+  cell.className=cls;
+  cell.innerHTML=`<span class="dl">${label}</span><span class="dd">${dow}</span>`;
+  cell.onclick=(e)=>{
+    e.stopPropagation();
+    if(mode==='sched-add'){schedStartDay=label;buildSchedAddCal();return;}
+    if(mode==='drop'){
+      dropSel.has(label)?dropSel.delete(label):dropSel.add(label);
+      buildCalendarInto(document.getElementById('drop-cal'),'drop');
+      buildCalendarInto(document.getElementById('add-cal'),'add');evaluate();
+    } else if(mode==='add'){
+      addSel.has(label)?addSel.delete(label):addSel.add(label);
+      buildCalendarInto(document.getElementById('drop-cal'),'drop');
+      buildCalendarInto(document.getElementById('add-cal'),'add');evaluate();
+    } else if(mode==='scan-drop'){
+      scanDropSel.has(label)?scanDropSel.delete(label):scanDropSel.add(label);
+      syncAvoidWithScanDrop();
+      buildCalendarInto(document.getElementById('scan-drop-cal'),'scan-drop');
+      updateScanDropSummary();updateLengthOptions();
+    } else if(mode==='avoid'){
+      avoidSel.has(label)?avoidSel.delete(label):avoidSel.add(label);
+      buildCalendarInto(document.getElementById('avoid-cal'),'avoid');
+    } else if(mode==='maxoff-avoid'){
+      maxoffAvoidSel.has(label)?maxoffAvoidSel.delete(label):maxoffAvoidSel.add(label);
+      buildCalendarInto(document.getElementById('maxoff-avoid-cal'),'maxoff-avoid');
+    }
+  };
+  return cell;
+}
+
+// ── COVERAGE CHECK ───────────────────────────────
+function coverageCheck(dropDays,addDays){
+  const dropNeg=dropDays.filter(d=>covMap[d]<0);
+  const addNeg=addDays.filter(d=>covMap[d]<0);
+  const dropNegSum=dropNeg.reduce((s,d)=>s+covMap[d],0);
+  const addNegSum=addNeg.reduce((s,d)=>s+covMap[d],0);
+  const useHoliday=dropDays.some(d=>isAPD(d));
+  let approved=false,reason='';
+  if(!useHoliday){
+    if(!dropNeg.length){approved=true;reason='No negative drop days — auto-approved.';}
+    else if(addNegSum<dropNegSum){approved=true;reason=`Add total (${addNegSum}) worse than drop total (${dropNegSum}).`;}
+    else reason=`Add total (${addNegSum}) not worse than drop total (${dropNegSum}).`;
+  } else {
+    if(!dropNeg.length){approved=true;reason='No negative drop days — auto-approved.';}
+    else{let bad=null;for(const d of dropNeg){if(!addDays.some(a=>covMap[a]<covMap[d])){bad=d;break;}}approved=!bad;reason=approved?'Every neg drop day has a worse add day.':`${bad} (${covMap[bad]}) has no worse add day.`;}
+  }
+  return{approved,reason,useHoliday,dropNeg,addNeg,dropNegSum,addNegSum};
+}
+
+// ── WILL IT SWAP ─────────────────────────────────
+function clearChecker(){dropSel.clear();addSel.clear();buildCalendarInto(document.getElementById('drop-cal'),'drop');buildCalendarInto(document.getElementById('add-cal'),'add');evaluate();}
+function evaluate(){
+  const bEl=document.getElementById('breakdown'),sg=document.getElementById('sum-grid');
+  const rb=document.getElementById('result-box'),rt=document.getElementById('result-title'),rs=document.getElementById('result-sub');
+  if(!dropSel.size&&!addSel.size){bEl.textContent='Select days above to see breakdown.';sg.style.display='none';rb.className='result-box';rt.style.color='#999';rt.textContent='Awaiting input';rs.style.color='#aaa';rs.textContent='Select days to evaluate';return;}
+  const overlapDays=[...dropSel].filter(d=>addSel.has(d));
+  const dropDays=[...dropSel].filter(d=>!addSel.has(d));
+  const addDays=[...addSel].filter(d=>!dropSel.has(d));
+  const{approved,reason,useHoliday,dropNeg,addNeg,dropNegSum,addNegSum}=coverageCheck(dropDays,addDays);
+  const makeTag=(d,side)=>{const c=covMap[d]!==undefined?covMap[d]:0,dow=getDOW(d);let bg,col,border;if(side==='drop'){bg=c<0?'#fde8e8':c===0?'#eee':'#eaf3de';col=c<0?'#7a1010':c===0?'#555':'#2a5c08';border=c<0?'#d94040':c===0?'#bbb':'#4a8c1c';}else{bg='#eaf3de';col='#2a5c08';border='#4a8c1c';}const hol=side==='drop'&&isAPD(d);return`<span class="tag" style="background:${bg};color:${col};border-color:${border}">${d} <span style="font-size:9px;opacity:.7">${dow}</span> <b>${c>0?'+':''}${c}</b>${hol?'<span class="badge badge-hol">HOL</span>':''}</span>`;};
+  let bHtml='';
+  if(overlapDays.length){bHtml+=`<p style="margin-bottom:6px"><b>Overlapping (skipped):</b> `;overlapDays.forEach(d=>bHtml+=`<span class="tag" style="background:rgba(130,50,180,.15);color:#4a0e7a;border-color:rgba(110,30,160,.5);text-decoration:line-through">${d} <span style="font-size:9px">${getDOW(d)}</span></span>`);bHtml+='</p>';}
+  if(dropDays.length){bHtml+=`<p style="margin-bottom:4px;font-weight:800;font-size:12px;color:#d94040">▼ Drop:</p><div style="margin-bottom:8px">`;dropDays.forEach(d=>bHtml+=makeTag(d,'drop'));bHtml+='</div>';}
+  if(addDays.length){bHtml+=`<p style="margin-bottom:4px;font-weight:800;font-size:12px;color:#4a8c1c">▲ Add:</p><div>`;addDays.forEach(d=>bHtml+=makeTag(d,'add'));bHtml+='</div>';}
+  if(useHoliday)bHtml+=`<p style="margin-top:8px;font-size:11px;color:#854F0B;background:#fff3d6;padding:5px 10px;border-radius:6px;display:inline-block">⚠️ APD Holiday period — day-by-day check applies</p>`;
+  bEl.innerHTML=bHtml;
+  document.getElementById('s-drop').textContent=dropNeg.length?dropNegSum:'none';document.getElementById('s-drop').style.color=dropNeg.length?'#d94040':'#4a8c1c';
+  document.getElementById('s-add').textContent=addNeg.length?addNegSum:'none';document.getElementById('s-add').style.color=addNeg.length?'#d94040':'#4a8c1c';
+  document.getElementById('s-method').textContent=useHoliday?'Day-by-day':'Cumulative';
+  sg.style.display='grid';
+  rb.className='result-box '+(approved?'result-ok':'result-no');
+  rt.style.color='';rt.textContent=approved?'✅ Swap Approved':'❌ Swap Denied';
+  rs.style.color='';rs.textContent=reason;
+}
+
+// ── TRADE FINDER ─────────────────────────────────
+function updateScanDropSummary(){
+  const el=document.getElementById('scan-drop-summary');
+  if(!scanDropSel.size){el.textContent='No days selected.';return;}
+  el.textContent=`${scanDropSel.size} day${scanDropSel.size>1?'s':''} selected: ${[...scanDropSel].join(', ')}`;
+}
+
+function updateLengthOptions(){
+  const n=scanDropSel.size;
+  const sl=document.getElementById('single-length');sl.innerHTML='';
+  if(n<1){sl.innerHTML='<option value="0">— Select drop days first —</option>';}
+  else{for(let i=1;i<=n+2;i++){const o=document.createElement('option');o.value=i;o.textContent=i===n?`${i}-day rotation (same as drop)`:i>n?`${i}-day rotation (+${i-n} extra)`:`${i}-day rotation`;if(i===n)o.selected=true;sl.appendChild(o);}}
+  const cd=document.getElementById('combo-max-days');cd.innerHTML='';
+  if(n<1){cd.innerHTML='<option value="0">— Select drop days first —</option>';}
+  else{for(let i=1;i<=n+2;i++){const o=document.createElement('option');o.value=i;o.textContent=i===n?`Up to ${i} days (same as drop)`:i>n?`Up to ${i} days (+${i-n} extra)`:`Up to ${i} days`;if(i===n)o.selected=true;cd.appendChild(o);}}
+  updateComboLenChecks();
+}
+
+function updateScannerUI(){
+  const mode=document.querySelector('input[name="scan-mode"]:checked').value;
+  document.getElementById('single-options').style.display=mode==='single'?'block':'none';
+  document.getElementById('combo-options').style.display=mode==='combo'?'block':'none';
+}
+
+// Combo length checkboxes with math validation
+function updateComboLenChecks(){
+  const el=document.getElementById('combo-len-checks');if(!el)return;
+  const maxDays=parseInt(document.getElementById('combo-max-days').value)||0;
+  const numRots=parseInt(document.getElementById('combo-rot-count').value)||2;
+  if(maxDays<1){el.innerHTML='<span style="font-size:12px;color:#aaa">Select drop days first</span>';return;}
+
+  // Which lengths are mathematically possible?
+  // A length L is possible if: there exists a valid combo of numRots rotations
+  // each ≥1 day, summing to ≤maxDays, where at least one rotation is length L
+  // Simplified: L is possible if L ≤ maxDays - (numRots - 1)*1
+  // i.e. L ≤ maxDays - numRots + 1
+  const maxPossibleLen=Math.max(0,maxDays-numRots+1);
+
+  // Read existing selections
+  const prevSelected=new Set();
+  el.querySelectorAll('button.active').forEach(b=>prevSelected.add(parseInt(b.dataset.len)));
+
+  el.innerHTML='';
+  for(let i=1;i<=maxDays;i++){
+    const possible=i<=maxPossibleLen;
+    const btn=document.createElement('button');
+    btn.className='len-cb-btn'+(possible&&(prevSelected.size===0||prevSelected.has(i))?' active':'')+(possible?'':' disabled');
+    btn.dataset.len=i;
+    btn.textContent=`${i}d`;
+    if(possible){btn.onclick=()=>{btn.classList.toggle('active');};} 
+    el.appendChild(btn);
+  }
+}
+
+function getAllowedLens(){
+  const el=document.getElementById('combo-len-checks');if(!el)return new Set([1,2,3,4,5]);
+  const allowed=new Set();
+  el.querySelectorAll('button.active').forEach(b=>allowed.add(parseInt(b.dataset.len)));
+  if(allowed.size===0){for(let i=1;i<=5;i++)allowed.add(i);}
+  return allowed;
+}
+
+function toggleAvoidWeekends(){
+  avoidWeekendsActive=!avoidWeekendsActive;
+  const btn=document.getElementById('avoid-wknd-btn');
+  if(avoidWeekendsActive){btn.className='action-btn warn-btn';btn.textContent='✕ Clear Weekend Avoidance';allDates.forEach(r=>{if(isWeekend(r.date))avoidSel.add(r.date);});}
+  else{btn.className='action-btn';btn.textContent='🗓 Avoid All Weekends';const wd=getWorkingDays();allDates.forEach(r=>{if(isWeekend(r.date)&&!wd.has(r.date))avoidSel.delete(r.date);});}
+  buildCalendarInto(document.getElementById('avoid-cal'),'avoid');
+}
+
+function getWindows(n){const dates=allDates.map(r=>r.date),wins=[];for(let i=0;i<=dates.length-n;i++)wins.push(dates.slice(i,i+n));return wins;}
+function removeOverlap(days,dropDays){return days.filter(d=>!dropDays.includes(d));}
+
+function runScanner(){
+  const resultsEl=document.getElementById('scan-results');resultsEl.innerHTML='';
+  if(scanDropSel.size<1){resultsEl.innerHTML='<div class="card" style="color:#d94040;font-weight:600">Select at least 1 drop day first.</div>';return;}
+  const dropDays=[...scanDropSel],dropLen=dropDays.length;
+  const mode=document.querySelector('input[name="scan-mode"]:checked').value;
+  const hasFilters=avoidSel.size>0;
+  const winBlocked=days=>days.some(d=>avoidSel.has(d));
+  let results=[];
+
+  if(mode==='single'){
+    const targetLen=parseInt(document.getElementById('single-length').value);
+    if(isNaN(targetLen)||targetLen<1){resultsEl.innerHTML='<div class="card" style="color:#d94040;font-weight:600">Select a target rotation length.</div>';return;}
+    for(const win of getWindows(targetLen)){
+      if(winBlocked(win))continue;
+      const ea=removeOverlap(win,dropDays),ed=removeOverlap(dropDays,win);
+      const{approved,reason,useHoliday}=coverageCheck(ed,ea);
+      if(approved)results.push({reason,useHoliday,trips:[win],totalDays:win.length,effectiveDrop:ed,effectiveAdd:ea});
+    }
+    results.sort((a,b)=>a.totalDays-b.totalDays);
+    renderScanResults(results,dropLen,'single',hasFilters);
+  } else {
+    const exactRots=parseInt(document.getElementById('combo-rot-count').value)||2;
+    const maxTotalDays=parseInt(document.getElementById('combo-max-days').value)||dropLen;
+    const allowed=getAllowedLens();
+    const allWindows=[];
+    for(let len=1;len<=maxTotalDays;len++){
+      if(!allowed.has(len))continue;
+      getWindows(len).forEach(w=>{if(!winBlocked(w))allWindows.push(w);});
+    }
+    const results_combo=[];
+    function genCombos(start,current,totalSoFar){
+      if(current.length===exactRots){
+        const combined=current.flat();
+        const unique=new Set(combined);
+        if(unique.size===combined.length&&combined.length<=maxTotalDays)results_combo.push([...current]);
+        return;
+      }
+      const remaining=exactRots-current.length;
+      for(let i=start;i<allWindows.length;i++){
+        const newTotal=totalSoFar+allWindows[i].length;
+        if(newTotal+remaining-1>maxTotalDays)continue;
+        genCombos(i+1,[...current,allWindows[i]],newTotal);
+      }
+    }
+    genCombos(0,[],0);
+    for(const trips of results_combo){
+      const all=[...new Set(trips.flat())];
+      const ea=removeOverlap(all,dropDays),ed=removeOverlap(dropDays,all);
+      const{approved,reason,useHoliday}=coverageCheck(ed,ea);
+      if(approved)results.push({reason,useHoliday,trips,totalDays:all.length,effectiveDrop:ed,effectiveAdd:ea});
+    }
+    const seen=new Set();
+    results=results.filter(r=>{const k=r.trips.map(t=>t.join('-')).sort().join('|');if(seen.has(k))return false;seen.add(k);return true;});
+    results.sort((a,b)=>a.totalDays-b.totalDays);results=results.slice(0,30);
+    renderScanResults(results,dropLen,'combo',hasFilters);
+  }
+}
+
+function renderScanResults(results,dropLen,mode,filtered){
+  const el=document.getElementById('scan-results');
+  const fn=filtered?' (after filters)':'';
+  if(!results.length){el.innerHTML=`<div class="card result-box result-no"><p class="result-title">No Valid Trades Found</p><p class="result-sub">No ${mode==='single'?'single rotation':'combination'} passes the coverage check${fn}.</p></div>`;return;}
+  let html=`<div class="card" style="background:#eef7e6;border:1.5px solid #4a8c1c;margin-bottom:10px"><p style="font-weight:800;color:#2a5c08;font-size:15px">✅ ${results.length} Valid Trade${results.length>1?'s':''} Found</p><p style="font-size:12px;color:#3a7010;margin-top:2px">Sorted by fewest working days · Drop: ${dropLen} days${fn}</p></div>`;
+  results.forEach((r,idx)=>{
+    const tl=r.trips.map(t=>`<b>${t[0]}</b><span style="font-size:9px;opacity:.7"> ${getDOW(t[0])}</span>–<b>${t[t.length-1]}</b><span style="font-size:9px;opacity:.7"> ${getDOW(t[t.length-1])}</span> (${t.length}d)`).join(' + ');
+    const sav=dropLen-r.totalDays;
+    const sb=sav>0?`<span style="font-size:11px;background:#2a5c08;color:#fff;padding:3px 10px;border-radius:12px;font-weight:800;white-space:nowrap">-${sav} day${sav>1?'s':''}</span>`:sav<0?`<span style="font-size:11px;background:#1a73e8;color:#fff;padding:3px 10px;border-radius:12px;font-weight:800;white-space:nowrap">+${Math.abs(sav)} extra</span>`:`<span style="font-size:11px;background:#666;color:#fff;padding:3px 10px;border-radius:12px;font-weight:800;white-space:nowrap">Same length</span>`;
+    const hf=r.useHoliday?'<span class="badge badge-hol">APD HOLIDAY</span>':'';
+    const dt=r.effectiveDrop.map(d=>{const c=covMap[d]!==undefined?covMap[d]:0,neg=c<0;const bg=neg?'#fde8e8':c===0?'#eee':'#eaf3de';const col=neg?'#7a1010':c===0?'#555':'#2a5c08';return`<span class="tag" style="background:${bg};color:${col};font-size:10px">${d}<span style="font-size:8px;opacity:.7"> ${getDOW(d)}</span> ${c>0?'+':''}${c}</span>`;}).join('');
+    const at=r.effectiveAdd.map(d=>{const c=covMap[d]!==undefined?covMap[d]:0;return`<span class="tag" style="background:#eaf3de;color:#2a5c08;border-color:#4a8c1c;font-size:10px">${d}<span style="font-size:8px;opacity:.7"> ${getDOW(d)}</span> ${c>0?'+':''}${c}</span>`;}).join('');
+    html+=`<div class="scan-result"><div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px;margin-bottom:6px"><div style="font-size:12px;color:#2a5c08;font-weight:700;flex:1">#${idx+1} ${tl} ${hf}</div>${sb}</div><div style="font-size:11px;color:#555;margin-bottom:6px"><b>${r.useHoliday?'Day-by-day':'Cumulative'}</b> · ${r.reason}</div>${r.effectiveDrop.length?`<div style="margin-bottom:4px"><span style="font-size:10px;font-weight:800;color:#d94040">▼ DROP: </span>${dt}</div>`:''}${r.effectiveAdd.length?`<div><span style="font-size:10px;font-weight:800;color:#4a8c1c">▲ ADD: </span>${at}</div>`:''}</div>`;
+  });
+  el.innerHTML=html;
+}
+
+// ── MAX DAYS OFF ─────────────────────────────────
+function toggleMaxOffWeekends(){
+  maxoffWeekendsActive=!maxoffWeekendsActive;
+  const btn=document.getElementById('maxoff-wknd-btn');
+  if(maxoffWeekendsActive){btn.className='action-btn warn-btn';btn.textContent='✕ Clear Weekend Avoidance';allDates.forEach(r=>{if(isWeekend(r.date))maxoffAvoidSel.add(r.date);});}
+  else{btn.className='action-btn';btn.textContent='🗓 Avoid All Weekends';allDates.forEach(r=>{if(isWeekend(r.date))maxoffAvoidSel.delete(r.date);});}
+  buildCalendarInto(document.getElementById('maxoff-avoid-cal'),'maxoff-avoid');
+}
+
+function renderMaxOffRotList(){
+  const el=document.getElementById('maxoff-rot-list');
+  if(!myRotations.length){el.innerHTML='<p style="font-size:12px;color:#888">Add rotations to My Schedule first.</p>';return;}
+  el.innerHTML=myRotations.map((t,i)=>`
+    <label class="cb-row">
+      <input type="checkbox" id="maxoff-cb-${i}" checked>
+      <div><div style="font-weight:700;font-size:13px;color:#1558b0">✈️ ${t.name}</div><div style="font-size:11px;color:#666">${t.days.join(', ')}</div></div>
+    </label>`).join('');
+}
+
+function runMaxDaysOff(){
+  const resEl=document.getElementById('maxoff-results');resEl.innerHTML='';
+  if(!myRotations.length){resEl.innerHTML='<div class="card" style="color:#d94040;font-weight:600">Add rotations to My Schedule first.</div>';return;}
+  const selectedRots=myRotations.filter((t,i)=>{const cb=document.getElementById(`maxoff-cb-${i}`);return cb&&cb.checked;});
+  if(!selectedRots.length){resEl.innerHTML='<div class="card" style="color:#d94040;font-weight:600">Select at least one rotation to try dropping.</div>';return;}
+
+  // Kept rotation days are unavailable for pickup
+  const keptWorkingDays=new Set();
+  myRotations.forEach((t,i)=>{const cb=document.getElementById(`maxoff-cb-${i}`);if(!(cb&&cb.checked))t.days.forEach(d=>keptWorkingDays.add(d));});
+
+  const allDropDays=[...new Set(selectedRots.flatMap(t=>t.days))];
+  const dropLen=allDropDays.length;
+
+  // Available pickup days: in table, not in maxoffAvoidSel, not kept working days
+  const availablePickupDays=allDates.map(r=>r.date).filter(d=>!maxoffAvoidSel.has(d)&&!keptWorkingDays.has(d));
+
+  resEl.innerHTML='<div class="card" style="color:#0097a7;font-weight:600">⏳ Searching... this may take a moment.</div>';
+
+  // Use setTimeout to allow UI to update before heavy computation
+  setTimeout(()=>{
+    const results=[];
+    outer:
+    for(let pickLen=0;pickLen<=dropLen+2;pickLen++){
+      if(availablePickupDays.length<pickLen)break;
+      const combos=combinationsOf(availablePickupDays,pickLen);
+      for(const addDays of combos){
+        const effectiveDrop=removeOverlap(allDropDays,addDays);
+        const effectiveAdd=removeOverlap(addDays,allDropDays);
+        const{approved,reason,useHoliday}=coverageCheck(effectiveDrop,effectiveAdd);
+        if(approved){
+          results.push({addDays,effectiveDrop,effectiveAdd,reason,useHoliday,totalAddDays:addDays.length,savedDays:dropLen-addDays.length});
+          if(results.length>=5)break outer;
+        }
+      }
+    }
+
+    if(!results.length){
+      resEl.innerHTML=`<div class="card result-box result-no"><p class="result-title">No Valid Combination Found</p><p class="result-sub">Could not find pickup days to satisfy coverage requirements with your avoid filters.</p></div>`;
+      return;
+    }
+
+    let html=`<div class="card" style="background:#e0f7fa;border:1.5px solid #0097a7;margin-bottom:8px"><p style="font-weight:800;color:#006978;font-size:15px">★ Top ${results.length} Max Days Off Result${results.length>1?'s':''}</p><p style="font-size:12px;color:#00838f;margin-top:2px">Dropping: ${selectedRots.map(t=>t.name).join(' + ')} (${dropLen} days total)</p></div>`;
+    results.forEach((r,idx)=>{
+      const dropTagHtml=r.effectiveDrop.map(d=>{const c=covMap[d]!==undefined?covMap[d]:0,neg=c<0;const bg=neg?'#fde8e8':c===0?'#eee':'#eaf3de';const col=neg?'#7a1010':c===0?'#555':'#2a5c08';return`<span class="tag" style="background:${bg};color:${col};font-size:10px">${d}<span style="font-size:8px;opacity:.7"> ${getDOW(d)}</span> ${c>0?'+':''}${c}</span>`;}).join('');
+      const addTagHtml=r.effectiveAdd.map(d=>{const c=covMap[d]!==undefined?covMap[d]:0;return`<span class="tag" style="background:#eaf3de;color:#2a5c08;border-color:#4a8c1c;font-size:10px">${d}<span style="font-size:8px;opacity:.7"> ${getDOW(d)}</span> ${c>0?'+':''}${c}</span>`;}).join('');
+      html+=`<div class="maxoff-result">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px;margin-bottom:6px">
+          <div style="font-weight:800;font-size:13px;color:#006978">#${idx+1} — Pick up ${r.totalAddDays} day${r.totalAddDays!==1?'s':''}</div>
+          <span style="font-size:11px;background:#006978;color:#fff;padding:3px 10px;border-radius:12px;font-weight:800;white-space:nowrap">-${r.savedDays} day${r.savedDays!==1?'s':''} worked</span>
+        </div>
+        <div style="font-size:11px;color:#555;margin-bottom:6px"><b>${r.useHoliday?'Day-by-day':'Cumulative'}</b> · ${r.reason}</div>
+        ${r.effectiveDrop.length?`<div style="margin-bottom:4px"><span style="font-size:10px;font-weight:800;color:#d94040">▼ DROP: </span>${dropTagHtml}</div>`:''}
+        ${r.effectiveAdd.length?`<div><span style="font-size:10px;font-weight:800;color:#4a8c1c">▲ ADD: </span>${addTagHtml}</div>`:''}
+        ${!r.effectiveAdd.length?`<div style="font-size:12px;font-weight:700;color:#2a5c08">✅ Pure days off — no pickup needed!</div>`:''}
+      </div>`;
+    });
+    resEl.innerHTML=html;
+  },50);
+}
+
+function combinationsOf(arr,k){
+  if(k===0)return[[]];
+  if(arr.length<k)return[];
+  const result=[];
+  function pick(start,current){
+    if(current.length===k){result.push([...current]);return;}
+    for(let i=start;i<=arr.length-(k-current.length);i++){current.push(arr[i]);pick(i+1,current);current.pop();}
+  }
+  pick(0,[]);return result;
+}
+</script>
+<script>
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let reserveData=[],adjPrevData=[],adjNextData=[],allDates=[],covMap={};
+let baseYear=new Date().getFullYear(),loadTime=null;
+let myRotations=[];
+const dropSel=new Set(),addSel=new Set(),scanDropSel=new Set(),avoidSel=new Set();
+const maxoffAvoidSel=new Set();
+let schedStartDay=null,schedLen=1,schedBodyOpen=false;
+let avoidWeekendsActive=false,maxoffWeekendsActive=false;
+
+const MONTH_MAP={JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11};
+const MN=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+const DOW=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+
+// ── DATE UTILS ──────────────────────────────────
+function parseDate(s){const m=s.match(/^(\d{2})([A-Z]{3})$/);return m?{day:parseInt(m[1]),month:MONTH_MAP[m[2]]}:null;}
+function toJsDate(l){const p=parseDate(l);return p?new Date(baseYear,p.month,p.day):null;}
+function getDOW(l){const d=toJsDate(l);return d?DOW[d.getDay()]:'???';}
+function isWeekend(l){const d=toJsDate(l);return d?d.getDay()===0||d.getDay()===6:false;}
+function getStartDOW(l){const d=toJsDate(l);return d?d.getDay():0;}
+function labelFromJsDate(d){return String(d.getDate()).padStart(2,'0')+MN[d.getMonth()];}
+function guessYear(labels){const now=new Date(),yr=now.getFullYear(),first=parseDate(labels[0]);if(!first)return yr;const d=new Date(yr,first.month,first.day);return d<new Date(now-90*864e5)?yr+1:yr;}
+function getWorkingDays(){const s=new Set();myRotations.forEach(t=>t.days.forEach(d=>s.add(d)));return s;}
+function isMainPeriod(l){return reserveData.some(r=>r.date===l);}
+function sortRotations(){myRotations.sort((a,b)=>{const pa=parseDate(a.days[0]),pb=parseDate(b.days[0]);if(!pa||!pb)return 0;return new Date(baseYear,pa.month,pa.day)-new Date(baseYear,pb.month,pb.day);});}
+
+// ── HOLIDAYS ────────────────────────────────────
+function getEaster(y){const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31)-1,dy=(h+l-7*m+114)%31+1;return new Date(y,mo,dy);}
+function getSuperBowl(y){let d=new Date(y,1,1);while(d.getDay()!==0)d.setDate(d.getDate()+1);d.setDate(d.getDate()+7);return d;}
+function getMemorialDay(y){let d=new Date(y,4,31);while(d.getDay()!==1)d.setDate(d.getDate()-1);return d;}
+function getLaborDay(y){let d=new Date(y,8,1);while(d.getDay()!==1)d.setDate(d.getDate()+1);return d;}
+function getThanksgiving(y){let d=new Date(y,10,1),c=0;while(c<4){if(d.getDay()===4)c++;if(c<4)d.setDate(d.getDate()+1);}return d;}
+function getHolidays(y){const e=getEaster(y),gf=new Date(e);gf.setDate(e.getDate()-2);return[new Date(y,0,1),getSuperBowl(y),gf,e,getMemorialDay(y),new Date(y,6,4),getLaborDay(y),getThanksgiving(y),new Date(y,11,25)];}
+function isAPD(l){const p=parseDate(l);if(!p)return false;for(let yr=baseYear-1;yr<=baseYear+1;yr++){for(const h of getHolidays(yr)){const ws=new Date(h);ws.setDate(h.getDate()-2);const we=new Date(h);we.setDate(h.getDate()+1);const t=new Date(baseYear,p.month,p.day);if(t>=ws&&t<=we)return true;}}return false;}
+
+// ── LOCAL STORAGE ────────────────────────────────
+function saveRots(){try{localStorage.setItem('pcs_rots',JSON.stringify(myRotations));}catch(e){}}
+function loadRotsLS(){try{const d=localStorage.getItem('pcs_rots');return d?JSON.parse(d):[]; }catch(e){return[];}}
+function saveTableLS(raw,key){try{localStorage.setItem('pcs_table_'+key,raw);if(key==='main')localStorage.setItem('pcs_table_ts',new Date().toISOString());}catch(e){}}
+function loadTableLS(key){try{return localStorage.getItem('pcs_table_'+key);}catch(e){return null;}}
+
+// ── INIT ────────────────────────────────────────
+window.addEventListener('load',()=>{
+  myRotations=loadRotsLS();sortRotations();updateSchedSub();
+  const raw=loadTableLS('main'),ts=localStorage.getItem('pcs_table_ts');
+  if(raw&&ts){
+    const saved=new Date(ts);
+    document.getElementById('saved-table-ts').textContent=`Last updated: ${saved.toLocaleDateString([],{month:'short',day:'numeric'})} ${saved.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`;
+    document.getElementById('saved-table-banner').style.display='flex';
+    document.getElementById('paste-first').style.display='none';
+  }
+  updateSchedCalVisibility();
+});
+
+function updateSchedCalVisibility(){
+  const ph=document.getElementById('sched-cal-placeholder');
+  const calEl=document.getElementById('sched-add-cal');
+  if(!reserveData.length){if(ph)ph.style.display='block';if(calEl)calEl.innerHTML='';}
+  else{if(ph)ph.style.display='none';}
+}
+
+// ── ADJ TABLES ──────────────────────────────────
+function toggleAdjPaste(w){const el=document.getElementById(w==='prev'?'prev-adj-paste':'next-adj-paste');el.style.display=el.style.display==='none'?'block':'none';}
+function loadAdjTable(w){
+  const raw=document.getElementById(w==='prev'?'paste-prev':'paste-next').value;
+  const data=parseLines(raw.split('\n').filter(l=>l.trim()));
+  if(!data.length){alert('Could not parse table.');return;}
+  saveTableLS(raw,w);
+  if(w==='prev')adjPrevData=data;else adjNextData=data;
+  data.forEach(r=>{covMap[r.date]=r.avail-r.reqd;});
+  rebuildAllDates();refreshAllCals();
+  document.getElementById(w==='prev'?'prev-adj-paste':'next-adj-paste').style.display='none';
+}
+function rebuildAllDates(){allDates=[...adjPrevData.slice(-4),...reserveData,...adjNextData.slice(0,4)];}
+
+// ── SCHEDULE ────────────────────────────────────
+function toggleSchedBody(){
+  schedBodyOpen=!schedBodyOpen;
+  document.getElementById('sched-body').style.display=schedBodyOpen?'block':'none';
+  const btn=document.getElementById('sched-toggle-btn');
+  if(schedBodyOpen){btn.textContent='▲ Collapse';btn.className='action-btn ghost-btn';updateSchedCalVisibility();if(reserveData.length)buildSchedAddCal();}
+  else updateSchedToggleBtn();
+}
+function updateSchedToggleBtn(){const btn=document.getElementById('sched-toggle-btn');if(myRotations.length){btn.textContent='✏️ Edit';btn.className='action-btn ghost-btn';}else{btn.textContent='Add Schedule';btn.className='action-btn primary-btn';}}
+function updateSchedSub(){const el=document.getElementById('sched-sub');if(!myRotations.length){el.textContent='Add your current rotations';return;}el.textContent=myRotations.map(t=>t.name).join(' · ');updateSchedToggleBtn();}
+function saveSchedAndCollapse(){
+  saveRots();schedBodyOpen=false;
+  document.getElementById('sched-body').style.display='none';
+  updateSchedSub();updateSchedToggleBtn();renderScheduleList();
+  if(reserveData.length){refreshAllCals();rebuildAvoidForSchedule();}
+  renderMaxOffRotList();
+}
+function buildSchedAddCal(){if(!reserveData.length)return;buildCalendarInto(document.getElementById('sched-add-cal'),'sched-add');}
+function setSchedLen(n){schedLen=n;updateLenBtns('slb',n);}
+function updateLenBtns(prefix,n){for(let i=1;i<=5;i++){const b=document.getElementById(prefix+i);if(b)b.className='action-btn'+(i===n?' primary-btn':'');}}
+function addSchedRot(){
+  if(!schedStartDay){alert('Select a start day on the calendar first.');return;}
+  addRotObj(schedStartDay,schedLen);schedStartDay=null;sortRotations();renderScheduleList();
+  updateLenBtns('slb',1);schedLen=1;
+  if(reserveData.length){refreshAllCals();buildSchedAddCal();}
+  renderMaxOffRotList();
+}
+function removeRot(idx){
+  myRotations.splice(idx,1);sortRotations();saveRots();updateSchedSub();renderScheduleList();
+  if(reserveData.length){refreshAllCals();rebuildAvoidForSchedule();buildSchedAddCal();}
+  renderMaxOffRotList();
+}
+function addRotObj(startLabel,len){
+  const p=parseDate(startLabel);if(!p)return;
+  const days=[];for(let i=0;i<len;i++){const d=new Date(baseYear,p.month,p.day+i);days.push(labelFromJsDate(d));}
+  myRotations.push({name:`${MN[p.month]}${String(p.day).padStart(2,'0')}/${len}-day`,days});
+}
+function renderScheduleList(){
+  const el=document.getElementById('schedule-list');
+  if(!myRotations.length){el.innerHTML='<p style="font-size:12px;color:#888;margin-bottom:6px">No rotations saved. Add rotations below.</p>';return;}
+  el.innerHTML=myRotations.map((t,i)=>`<div class="rot-card"><div><div class="rot-label">✈️ ${t.name}</div><div class="rot-dates">${t.days.join(', ')}</div></div><button class="action-btn danger-btn" onclick="removeRot(${i})" style="font-size:11px;padding:5px 10px;min-height:32px">✕</button></div>`).join('');
+}
+
+// ── AVOID ────────────────────────────────────────
+// avoidSel is strictly driven by user taps + kept working days
+// When scan drop changes, rebuild: kept working days go in, dropped days come out as plain days
+function rebuildAvoidForSchedule(){
+  avoidSel.clear();
+  getWorkingDays().forEach(d=>{if(!scanDropSel.has(d))avoidSel.add(d);});
+  buildCalendarInto(document.getElementById('avoid-cal'),'avoid');
+}
+function syncAvoidWithScanDrop(){
+  // Remove scanDrop days from avoid, keep everything else
+  const wd=getWorkingDays();
+  avoidSel.clear();
+  wd.forEach(d=>{if(!scanDropSel.has(d))avoidSel.add(d);});
+  if(avoidWeekendsActive)allDates.forEach(r=>{if(isWeekend(r.date))avoidSel.add(r.date);});
+  buildCalendarInto(document.getElementById('avoid-cal'),'avoid');
+}
+
+// ── LOAD TABLE ───────────────────────────────────
+function parseLines(lines){return lines.map(l=>{const p=l.trim().split(/[\s\t]+/);if(p.length<3)return null;const date=p[0].toUpperCase(),reqd=parseInt(p[1]),avail=parseInt(p[2]);return date.match(/^\d{2}[A-Z]{3}$/)&&!isNaN(reqd)&&!isNaN(avail)?{date,reqd,avail}:null;}).filter(Boolean);}
+function showUpdatePaste(){document.getElementById('paste-area-update').value='';document.getElementById('paste-update').style.display='block';}
+function cancelUpdate(){document.getElementById('paste-update').style.display='none';}
+function loadTableFirst(){processTableLoad(document.getElementById('paste-area-first').value);}
+function loadTableUpdate(){processTableLoad(document.getElementById('paste-area-update').value);document.getElementById('paste-update').style.display='none';}
+function processTableLoad(raw){
+  const lines=raw.split('\n').filter(l=>l.trim());
+  reserveData=parseLines(lines);
+  if(!reserveData.length){alert('Could not parse rows.\nUse format: 01AUG 30 25');return;}
+  saveTableLS(raw,'main');loadTime=new Date();
+  baseYear=guessYear(reserveData.map(r=>r.date));
+  covMap={};reserveData.forEach(r=>{covMap[r.date]=r.avail-r.reqd;});
+  const pr=loadTableLS('prev'),nr=loadTableLS('next');
+  if(pr){adjPrevData=parseLines(pr.split('\n').filter(l=>l.trim()));adjPrevData.forEach(r=>{covMap[r.date]=r.avail-r.reqd;});}
+  if(nr){adjNextData=parseLines(nr.split('\n').filter(l=>l.trim()));adjNextData.forEach(r=>{covMap[r.date]=r.avail-r.reqd;});}
+  rebuildAllDates();
+  const label=loadTime.toLocaleDateString([],{month:'short',day:'numeric'})+' '+loadTime.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('saved-table-ts').textContent=`Last updated: ${label}`;
+  document.getElementById('saved-table-banner').style.display='flex';
+  document.getElementById('paste-first').style.display='none';
+  document.getElementById('adj-section').style.display='block';
+  finishLoad();
+}
+function loadSavedTable(){
+  const raw=loadTableLS('main');if(!raw)return;
+  const lines=raw.split('\n').filter(l=>l.trim());
+  reserveData=parseLines(lines);if(!reserveData.length){alert('Saved table could not be parsed.');return;}
+  loadTime=new Date(localStorage.getItem('pcs_table_ts')||new Date());
+  baseYear=guessYear(reserveData.map(r=>r.date));
+  covMap={};reserveData.forEach(r=>{covMap[r.date]=r.avail-r.reqd;});
+  const pr=loadTableLS('prev'),nr=loadTableLS('next');
+  if(pr){adjPrevData=parseLines(pr.split('\n').filter(l=>l.trim()));adjPrevData.forEach(r=>{covMap[r.date]=r.avail-r.reqd;});}
+  if(nr){adjNextData=parseLines(nr.split('\n').filter(l=>l.trim()));adjNextData.forEach(r=>{covMap[r.date]=r.avail-r.reqd;});}
+  rebuildAllDates();document.getElementById('adj-section').style.display='block';finishLoad();
+}
+function finishLoad(){
+  dropSel.clear();addSel.clear();scanDropSel.clear();avoidSel.clear();
+  document.getElementById('main').style.display='block';
+  const hhmm=loadTime?loadTime.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
+  document.getElementById('load-status').textContent=`✅ ${reserveData.length} days loaded${hhmm?' at '+hhmm:''}`;
+  sortRotations();buildCovTable();refreshAllCals();renderScheduleList();
+  updateSchedCalVisibility();if(schedBodyOpen)buildSchedAddCal();
+  rebuildAvoidForSchedule();evaluate();updateLengthOptions();
+  document.getElementById('scan-results').innerHTML='';
+  renderMaxOffRotList();
+  buildCalendarInto(document.getElementById('maxoff-avoid-cal'),'maxoff-avoid');
+}
+function refreshAllCals(){
+  buildCalendarInto(document.getElementById('drop-cal'),'drop');
+  buildCalendarInto(document.getElementById('add-cal'),'add');
+  buildCalendarInto(document.getElementById('scan-drop-cal'),'scan-drop');
+  buildCalendarInto(document.getElementById('avoid-cal'),'avoid');
+}
+
+// ── COVERAGE TABLE ───────────────────────────────
+function buildCovTable(){
+  const table=document.getElementById('cov-table');
+  const rows=[...adjPrevData.slice(-4),...reserveData,...adjNextData.slice(0,4)];
+  let html='<tr><th class="cov-th">Date</th>';
+  rows.forEach(r=>{const adj=!isMainPeriod(r.date);html+=`<th class="cov-th"${adj?' style="background:#f0e8ff;color:#5a2d82"':''}>${r.date}<br><span style="font-weight:400;font-size:8px">${getDOW(r.date)}</span></th>`;});
+  html+='</tr>';
+  [['Reqd',r=>r.reqd],['Avail',r=>r.avail],['Cov',r=>{const c=covMap[r.date]!==undefined?covMap[r.date]:r.avail-r.reqd;const col=c<0?'#d94040':c===0?'#999':'#4a8c1c';return`<span style="color:${col};font-weight:700">${c}</span>`;}]].forEach(([lbl,fn])=>{
+    html+=`<tr><td class="cov-td" style="font-weight:700;background:#f5f7ff;color:#666">${lbl}</td>`;
+    rows.forEach(r=>{const adj=!isMainPeriod(r.date);html+=`<td class="cov-td"${adj?' style="background:#f8f0ff;color:#5a2d82"':''}>${fn(r)}</td>`;});html+='</tr>';
+  });
+  table.innerHTML=html;
+}
+
+// ── TAB ─────────────────────────────────────────
+function switchTab(tab){
+  ['checker','scanner','maxoff'].forEach(t=>{
+    document.getElementById('pane-'+t).style.display=t===tab?'block':'none';
+    document.getElementById('tab-'+t).className='tab-btn'+(t===tab?' active':'');
+  });
+  if(tab==='maxoff'){buildCalendarInto(document.getElementById('maxoff-avoid-cal'),'maxoff-avoid');}
+}
+
+// ═══════════════════════════════════════════════
+// CALENDAR BUILDER
+// ═══════════════════════════════════════════════
+function buildCalendarInto(container,mode){
+  if(!container)return;container.innerHTML='';
+  const dates=allDates.length?allDates:reserveData;
+  if(!dates.length)return;
+  const wd=getWorkingDays();
+
+  // Map: date -> rotation
+  const rotDayMap={};
+  myRotations.forEach(t=>t.days.forEach(d=>{if(!rotDayMap[d])rotDayMap[d]=t;}));
+
+  // Which days are currently dropped (scanner)
+  // In 'add' mode: dropped rotation days are NOT working, they're free
+  // In 'avoid' mode: dropped rotation days are NOT avoided (shown as open days)
+
+  // DOW header
+  const hdr=document.createElement('div');hdr.className='cal-header';
+  ['SUN','MON','TUE','WED','THU','FRI','SAT'].forEach((d,i)=>{const c=document.createElement('div');c.className='cal-dow'+(i===0||i===6?' wknd':'');c.textContent=d;hdr.appendChild(c);});
+  container.appendChild(hdr);
+
+  // Build slots
+  const firstDOW=getStartDOW(dates[0].date);
+  const slots=[];
+  for(let i=0;i<firstDOW;i++)slots.push(null);
+  dates.forEach(r=>slots.push(r));
+  while(slots.length%7!==0)slots.push(null);
+
+  const wrap=document.createElement('div');wrap.style.cssText='display:flex;flex-direction:column;gap:3px';
+
+  for(let rowStart=0;rowStart<slots.length;rowStart+=7){
+    const rowEl=document.createElement('div');rowEl.className='cal-row';
+    let col=0;
+    while(col<7){
+      const slot=slots[rowStart+col];
+      if(!slot){const e=document.createElement('div');e.className='cal-day empty';rowEl.appendChild(e);col++;continue;}
+      const label=slot.date;
+      const rot=rotDayMap[label];
+      const isAdj=!isMainPeriod(label);
+
+      // Determine if this day's rotation is currently "dropped" (selected to drop)
+      const rotIsDropped=rot&&rot.days.every(d=>
+        mode==='drop'?dropSel.has(d):mode==='scan-drop'?scanDropSel.has(d):false
+      );
+
+      // In 'add' mode: show rotation as plain day if it's been dropped; show non-selectable if it's a kept working day
+      // In 'avoid' mode: show rotation as plain (open) day if it's been dropped (scan-drop)
+      const showAsPlainDay=(
+        (mode==='add'&&rot&&rotIsDropped)||       // dropped rot days are free to add
+        (mode==='add'&&rot&&!rotIsDropped&&!dropSel.has(label))||  // kept rot days — handled below as no-sel
+        (mode==='avoid'&&rot&&scanDropSel.has(label))  // dropped days become plain avoidable days
+      );
+
+      // For add calendar: kept (non-dropped) rotations show as dimmed rot blocks
+      if(mode==='add'&&rot&&!rot.days.every(d=>dropSel.has(d))){
+        const dayIdx=rot.days.indexOf(label);
+        const isFirstInRow=dayIdx===0||col===0;
+        if(isFirstInRow){
+          let span=0;
+          for(let c2=col;c2<7;c2++){const s2=slots[rowStart+c2];if(s2&&rotDayMap[s2.date]===rot)span++;else break;}
+          const block=document.createElement('div');
+          block.className='rot-block';
+          block.style.gridColumn='span '+span;
+          block.style.opacity='0.5';block.style.cursor='default';block.style.pointerEvents='none';
+          if(isAdj)block.style.borderColor='#c9a0e8';
+          block.innerHTML='<div class="rb-name">✈️ '+rot.name+'</div><div class="rb-range">'+rot.days[0]+'–'+rot.days[rot.days.length-1]+'</div><div class="rb-dow">'+getDOW(rot.days[0])+'–'+getDOW(rot.days[rot.days.length-1])+'</div>';
+          rowEl.appendChild(block);col+=span;
+        } else {
+          const cont=document.createElement('div');
+          cont.className='rot-cont';
+          cont.style.opacity='0.5';cont.style.cursor='default';cont.style.pointerEvents='none';
+          if(isAdj)cont.style.borderColor='#c9a0e8';
+          cont.textContent='◀ '+rot.name+' '+label;
+          rowEl.appendChild(cont);col++;
+        }
+        continue;
+      }
+
+      // For avoid calendar: if rotation exists and NOT in scanDropSel -> show as avoided rot-block
+      if(mode==='avoid'&&rot&&!rot.days.some(d=>scanDropSel.has(d))){
+        const dayIdx=rot.days.indexOf(label);
+        const isFirstInRow=dayIdx===0||col===0;
+        if(isFirstInRow){
+          let span=0;
+          for(let c2=col;c2<7;c2++){const s2=slots[rowStart+c2];if(s2&&rotDayMap[s2.date]===rot)span++;else break;}
+          const block=buildRotBlock(rot,span,mode,isAdj);
+          rowEl.appendChild(block);col+=span;
+        } else {
+          const cont=buildRotCont(rot,label,mode,isAdj);
+          rowEl.appendChild(cont);col++;
+        }
+        continue;
+      }
+
+      // For sched-add calendar: show existing rotations as dimmed non-selectable blocks
+      if(mode==='sched-add'&&rot){
+        const dayIdx=rot.days.indexOf(label);
+        const isFirstInRow=dayIdx===0||col===0;
+        if(isFirstInRow){
+          let span=0;
+          for(let c2=col;c2<7;c2++){const s2=slots[rowStart+c2];if(s2&&rotDayMap[s2.date]===rot)span++;else break;}
+          const block=document.createElement('div');
+          block.className='rot-block';
+          block.style.gridColumn='span '+span;
+          block.style.opacity='0.6';block.style.cursor='default';block.style.pointerEvents='none';
+          if(isAdj)block.style.borderColor='#c9a0e8';
+          block.innerHTML='<div class="rb-name">✈️ '+rot.name+'</div><div class="rb-range">'+rot.days[0]+'–'+rot.days[rot.days.length-1]+'</div><div class="rb-dow">'+getDOW(rot.days[0])+'–'+getDOW(rot.days[rot.days.length-1])+'</div>';
+          rowEl.appendChild(block);col+=span;
+        } else {
+          const cont=document.createElement('div');
+          cont.className='rot-cont';
+          cont.style.opacity='0.6';cont.style.cursor='default';cont.style.pointerEvents='none';
+          if(isAdj)cont.style.borderColor='#c9a0e8';
+          cont.textContent='◀ '+rot.name+' '+label;
+          rowEl.appendChild(cont);col++;
+        }
+        continue;
+      }
+
+      // For drop/scan-drop calendars: show rotation blocks
+      if((mode==='drop'||mode==='scan-drop')&&rot){
+        const dayIdx=rot.days.indexOf(label);
+        const isFirstInRow=dayIdx===0||col===0;
+        if(isFirstInRow){
+          let span=0;
+          for(let c2=col;c2<7;c2++){const s2=slots[rowStart+c2];if(s2&&rotDayMap[s2.date]===rot)span++;else break;}
+          const block=buildRotBlock(rot,span,mode,isAdj);
+          rowEl.appendChild(block);col+=span;
+        } else {
+          const cont=buildRotCont(rot,label,mode,isAdj);
+          rowEl.appendChild(cont);col++;
+        }
+        continue;
+      }
+
+      // Plain day cell
+      const cell=buildDayCell(slot,mode,isAdj,wd);
+      rowEl.appendChild(cell);col++;
+    }
+    wrap.appendChild(rowEl);
+  }
+  container.appendChild(wrap);
+}
+
+function buildRotBlock(rot,span,mode,isAdj){
+  const block=document.createElement('div');
+  block.className='rot-block';
+  block.style.gridColumn=`span ${span}`;
+  if(isAdj)block.style.borderColor='#c9a0e8';
+
+  const allDropSel=rot.days.every(d=>mode==='drop'?dropSel.has(d):mode==='scan-drop'?scanDropSel.has(d):false);
+  const allAvoided=rot.days.every(d=>avoidSel.has(d));
+  if(allDropSel)block.classList.add('sel-drop');
+  if(mode==='avoid'&&allAvoided)block.classList.add('avoided-rot');
+
+  const dayIdx=rot.days.indexOf(rot.days[0]);
+  const isFirstDay=true;
+  const firstInBlock=rot.days[0];
+  const lastInBlock=rot.days[rot.days.length-1];
+  block.innerHTML=`<div class="rb-name">✈️ ${rot.name}</div><div class="rb-range">${firstInBlock}–${lastInBlock}</div><div class="rb-dow">${getDOW(firstInBlock)}–${getDOW(lastInBlock)}</div>`;
+  block.onclick=(e)=>{e.stopPropagation();handleRotClick(rot,mode);};
+  return block;
+}
+
+function buildRotCont(rot,label,mode,isAdj){
+  const cont=document.createElement('div');
+  cont.className='rot-cont';
+  if(isAdj)cont.style.borderColor='#c9a0e8';
+  const allDropSel=rot.days.every(d=>mode==='drop'?dropSel.has(d):mode==='scan-drop'?scanDropSel.has(d):false);
+  if(allDropSel)cont.classList.add('sel-drop');
+  cont.innerHTML=`◀ ${rot.name}<br>${label}`;
+  cont.onclick=(e)=>{e.stopPropagation();handleRotClick(rot,mode);};
+  return cont;
+}
+
+function handleRotClick(rot,mode){
+  if(mode==='drop'){
+    const allSel=rot.days.every(d=>dropSel.has(d));
+    rot.days.forEach(d=>allSel?dropSel.delete(d):dropSel.add(d));
+    buildCalendarInto(document.getElementById('drop-cal'),'drop');
+    buildCalendarInto(document.getElementById('add-cal'),'add');
+    evaluate();
+  } else if(mode==='scan-drop'){
+    const allSel=rot.days.every(d=>scanDropSel.has(d));
+    rot.days.forEach(d=>allSel?scanDropSel.delete(d):scanDropSel.add(d));
+    syncAvoidWithScanDrop();
+    buildCalendarInto(document.getElementById('scan-drop-cal'),'scan-drop');
+    updateScanDropSummary();updateLengthOptions();
+  } else if(mode==='avoid'){
+    const allSel=rot.days.every(d=>avoidSel.has(d));
+    rot.days.forEach(d=>allSel?avoidSel.delete(d):avoidSel.add(d));
+    buildCalendarInto(document.getElementById('avoid-cal'),'avoid');
+  }
+}
+
+function buildDayCell(r,mode,isAdj,wd){
+  const label=r.date;
+  const dow=getDOW(label);
+  const wknd=dow==='SAT'||dow==='SUN';
+  const isWorking=wd.has(label);
+  const cell=document.createElement('div');
+  let cls='cal-day';
+  if(isAdj)cls+=' adj-period';
+  else if(mode==='drop'){
+    if(dropSel.has(label)&&addSel.has(label))cls+=' overlap';
+    else if(dropSel.has(label))cls+=' sel-drop';
+    else if(wknd)cls+=' wknd-day';
+  } else if(mode==='add'){
+    // Only non-working days or dropped days reach here
+    if(dropSel.has(label)&&addSel.has(label))cls+=' overlap';
+    else if(addSel.has(label))cls+=' sel-add';
+    else if(wknd)cls+=' wknd-day';
+  } else if(mode==='scan-drop'){
+    if(scanDropSel.has(label))cls+=' sel-drop';
+    else if(wknd)cls+=' wknd-day';
+  } else if(mode==='avoid'){
+    // Plain days in avoid — either free non-working days or dropped rotation days
+    if(avoidSel.has(label))cls+=' avoided';
+    else if(wknd)cls+=' wknd-day';
+  } else if(mode==='sched-add'){
+    if(schedStartDay===label)cls+=' sel-drop';
+    else if(wknd)cls+=' wknd-day';
+  } else if(mode==='maxoff-avoid'){
+    if(maxoffAvoidSel.has(label))cls+=' avoided';
+    else if(wknd)cls+=' wknd-day';
+  }
+  cell.className=cls;
+  cell.innerHTML=`<span class="dl">${label}</span><span class="dd">${dow}</span>`;
+  cell.onclick=(e)=>{
+    e.stopPropagation();
+    if(mode==='sched-add'){schedStartDay=label;buildSchedAddCal();return;}
+    if(mode==='drop'){
+      dropSel.has(label)?dropSel.delete(label):dropSel.add(label);
+      buildCalendarInto(document.getElementById('drop-cal'),'drop');
+      buildCalendarInto(document.getElementById('add-cal'),'add');evaluate();
+    } else if(mode==='add'){
+      addSel.has(label)?addSel.delete(label):addSel.add(label);
+      buildCalendarInto(document.getElementById('drop-cal'),'drop');
+      buildCalendarInto(document.getElementById('add-cal'),'add');evaluate();
+    } else if(mode==='scan-drop'){
+      scanDropSel.has(label)?scanDropSel.delete(label):scanDropSel.add(label);
+      syncAvoidWithScanDrop();
+      buildCalendarInto(document.getElementById('scan-drop-cal'),'scan-drop');
+      updateScanDropSummary();updateLengthOptions();
+    } else if(mode==='avoid'){
+      avoidSel.has(label)?avoidSel.delete(label):avoidSel.add(label);
+      buildCalendarInto(document.getElementById('avoid-cal'),'avoid');
+    } else if(mode==='maxoff-avoid'){
+      maxoffAvoidSel.has(label)?maxoffAvoidSel.delete(label):maxoffAvoidSel.add(label);
+      buildCalendarInto(document.getElementById('maxoff-avoid-cal'),'maxoff-avoid');
+    }
+  };
+  return cell;
+}
+
+// ── COVERAGE CHECK ───────────────────────────────
+function coverageCheck(dropDays,addDays){
+  const dropNeg=dropDays.filter(d=>covMap[d]<0);
+  const addNeg=addDays.filter(d=>covMap[d]<0);
+  const dropNegSum=dropNeg.reduce((s,d)=>s+covMap[d],0);
+  const addNegSum=addNeg.reduce((s,d)=>s+covMap[d],0);
+  const useHoliday=dropDays.some(d=>isAPD(d));
+  let approved=false,reason='';
+  if(!useHoliday){
+    if(!dropNeg.length){approved=true;reason='No negative drop days — auto-approved.';}
+    else if(addNegSum<dropNegSum){approved=true;reason=`Add total (${addNegSum}) worse than drop total (${dropNegSum}).`;}
+    else reason=`Add total (${addNegSum}) not worse than drop total (${dropNegSum}).`;
+  } else {
+    if(!dropNeg.length){approved=true;reason='No negative drop days — auto-approved.';}
+    else{let bad=null;for(const d of dropNeg){if(!addDays.some(a=>covMap[a]<covMap[d])){bad=d;break;}}approved=!bad;reason=approved?'Every neg drop day has a worse add day.':`${bad} (${covMap[bad]}) has no worse add day.`;}
+  }
+  return{approved,reason,useHoliday,dropNeg,addNeg,dropNegSum,addNegSum};
+}
+
+// ── WILL IT SWAP ─────────────────────────────────
+function clearChecker(){dropSel.clear();addSel.clear();buildCalendarInto(document.getElementById('drop-cal'),'drop');buildCalendarInto(document.getElementById('add-cal'),'add');evaluate();}
+function evaluate(){
+  const bEl=document.getElementById('breakdown'),sg=document.getElementById('sum-grid');
+  const rb=document.getElementById('result-box'),rt=document.getElementById('result-title'),rs=document.getElementById('result-sub');
+  if(!dropSel.size&&!addSel.size){bEl.textContent='Select days above to see breakdown.';sg.style.display='none';rb.className='result-box';rt.style.color='#999';rt.textContent='Awaiting input';rs.style.color='#aaa';rs.textContent='Select days to evaluate';return;}
+  const overlapDays=[...dropSel].filter(d=>addSel.has(d));
+  const dropDays=[...dropSel].filter(d=>!addSel.has(d));
+  const addDays=[...addSel].filter(d=>!dropSel.has(d));
+  const{approved,reason,useHoliday,dropNeg,addNeg,dropNegSum,addNegSum}=coverageCheck(dropDays,addDays);
+  const makeTag=(d,side)=>{const c=covMap[d]!==undefined?covMap[d]:0,dow=getDOW(d);let bg,col,border;if(side==='drop'){bg=c<0?'#fde8e8':c===0?'#eee':'#eaf3de';col=c<0?'#7a1010':c===0?'#555':'#2a5c08';border=c<0?'#d94040':c===0?'#bbb':'#4a8c1c';}else{bg='#eaf3de';col='#2a5c08';border='#4a8c1c';}const hol=side==='drop'&&isAPD(d);return`<span class="tag" style="background:${bg};color:${col};border-color:${border}">${d} <span style="font-size:9px;opacity:.7">${dow}</span> <b>${c>0?'+':''}${c}</b>${hol?'<span class="badge badge-hol">HOL</span>':''}</span>`;};
+  let bHtml='';
+  if(overlapDays.length){bHtml+=`<p style="margin-bottom:6px"><b>Overlapping (skipped):</b> `;overlapDays.forEach(d=>bHtml+=`<span class="tag" style="background:rgba(130,50,180,.15);color:#4a0e7a;border-color:rgba(110,30,160,.5);text-decoration:line-through">${d} <span style="font-size:9px">${getDOW(d)}</span></span>`);bHtml+='</p>';}
+  if(dropDays.length){bHtml+=`<p style="margin-bottom:4px;font-weight:800;font-size:12px;color:#d94040">▼ Drop:</p><div style="margin-bottom:8px">`;dropDays.forEach(d=>bHtml+=makeTag(d,'drop'));bHtml+='</div>';}
+  if(addDays.length){bHtml+=`<p style="margin-bottom:4px;font-weight:800;font-size:12px;color:#4a8c1c">▲ Add:</p><div>`;addDays.forEach(d=>bHtml+=makeTag(d,'add'));bHtml+='</div>';}
+  if(useHoliday)bHtml+=`<p style="margin-top:8px;font-size:11px;color:#854F0B;background:#fff3d6;padding:5px 10px;border-radius:6px;display:inline-block">⚠️ APD Holiday period — day-by-day check applies</p>`;
+  bEl.innerHTML=bHtml;
+  document.getElementById('s-drop').textContent=dropNeg.length?dropNegSum:'none';document.getElementById('s-drop').style.color=dropNeg.length?'#d94040':'#4a8c1c';
+  document.getElementById('s-add').textContent=addNeg.length?addNegSum:'none';document.getElementById('s-add').style.color=addNeg.length?'#d94040':'#4a8c1c';
+  document.getElementById('s-method').textContent=useHoliday?'Day-by-day':'Cumulative';
+  sg.style.display='grid';
+  rb.className='result-box '+(approved?'result-ok':'result-no');
+  rt.style.color='';rt.textContent=approved?'✅ Swap Approved':'❌ Swap Denied';
+  rs.style.color='';rs.textContent=reason;
+}
+
+// ── TRADE FINDER ─────────────────────────────────
+function updateScanDropSummary(){
+  const el=document.getElementById('scan-drop-summary');
+  if(!scanDropSel.size){el.textContent='No days selected.';return;}
+  el.textContent=`${scanDropSel.size} day${scanDropSel.size>1?'s':''} selected: ${[...scanDropSel].join(', ')}`;
+}
+
+function updateLengthOptions(){
+  const n=scanDropSel.size;
+  const sl=document.getElementById('single-length');sl.innerHTML='';
+  if(n<1){sl.innerHTML='<option value="0">— Select drop days first —</option>';}
+  else{for(let i=1;i<=n+2;i++){const o=document.createElement('option');o.value=i;o.textContent=i===n?`${i}-day rotation (same as drop)`:i>n?`${i}-day rotation (+${i-n} extra)`:`${i}-day rotation`;if(i===n)o.selected=true;sl.appendChild(o);}}
+  const cd=document.getElementById('combo-max-days');cd.innerHTML='';
+  if(n<1){cd.innerHTML='<option value="0">— Select drop days first —</option>';}
+  else{for(let i=1;i<=n+2;i++){const o=document.createElement('option');o.value=i;o.textContent=i===n?`Up to ${i} days (same as drop)`:i>n?`Up to ${i} days (+${i-n} extra)`:`Up to ${i} days`;if(i===n)o.selected=true;cd.appendChild(o);}}
+  updateComboLenChecks();
+}
+
+function updateScannerUI(){
+  const mode=document.querySelector('input[name="scan-mode"]:checked').value;
+  document.getElementById('single-options').style.display=mode==='single'?'block':'none';
+  document.getElementById('combo-options').style.display=mode==='combo'?'block':'none';
+}
+
+// Combo length checkboxes with math validation
+function updateComboLenChecks(){
+  const el=document.getElementById('combo-len-checks');if(!el)return;
+  const maxDays=parseInt(document.getElementById('combo-max-days').value)||0;
+  const numRots=parseInt(document.getElementById('combo-rot-count').value)||2;
+  if(maxDays<1){el.innerHTML='<span style="font-size:12px;color:#aaa">Select drop days first</span>';return;}
+
+  // Which lengths are mathematically possible?
+  // A length L is possible if: there exists a valid combo of numRots rotations
+  // each ≥1 day, summing to ≤maxDays, where at least one rotation is length L
+  // Simplified: L is possible if L ≤ maxDays - (numRots - 1)*1
+  // i.e. L ≤ maxDays - numRots + 1
+  const maxPossibleLen=Math.max(0,maxDays-numRots+1);
+
+  // Read existing selections
+  const prevSelected=new Set();
+  el.querySelectorAll('button.active').forEach(b=>prevSelected.add(parseInt(b.dataset.len)));
+
+  el.innerHTML='';
+  for(let i=1;i<=maxDays;i++){
+    const possible=i<=maxPossibleLen;
+    const btn=document.createElement('button');
+    btn.className='len-cb-btn'+(possible&&(prevSelected.size===0||prevSelected.has(i))?' active':'')+(possible?'':' disabled');
+    btn.dataset.len=i;
+    btn.textContent=`${i}d`;
+    if(possible){btn.onclick=()=>{btn.classList.toggle('active');};} 
+    el.appendChild(btn);
+  }
+}
+
+function getAllowedLens(){
+  const el=document.getElementById('combo-len-checks');if(!el)return new Set([1,2,3,4,5]);
+  const allowed=new Set();
+  el.querySelectorAll('button.active').forEach(b=>allowed.add(parseInt(b.dataset.len)));
+  if(allowed.size===0){for(let i=1;i<=5;i++)allowed.add(i);}
+  return allowed;
+}
+
+function toggleAvoidWeekends(){
+  avoidWeekendsActive=!avoidWeekendsActive;
+  const btn=document.getElementById('avoid-wknd-btn');
+  if(avoidWeekendsActive){btn.className='action-btn warn-btn';btn.textContent='✕ Clear Weekend Avoidance';allDates.forEach(r=>{if(isWeekend(r.date))avoidSel.add(r.date);});}
+  else{btn.className='action-btn';btn.textContent='🗓 Avoid All Weekends';const wd=getWorkingDays();allDates.forEach(r=>{if(isWeekend(r.date)&&!wd.has(r.date))avoidSel.delete(r.date);});}
+  buildCalendarInto(document.getElementById('avoid-cal'),'avoid');
+}
+
+function getWindows(n){const dates=allDates.map(r=>r.date),wins=[];for(let i=0;i<=dates.length-n;i++)wins.push(dates.slice(i,i+n));return wins;}
+function removeOverlap(days,dropDays){return days.filter(d=>!dropDays.includes(d));}
+
+function runScanner(){
+  const resultsEl=document.getElementById('scan-results');resultsEl.innerHTML='';
+  if(scanDropSel.size<1){resultsEl.innerHTML='<div class="card" style="color:#d94040;font-weight:600">Select at least 1 drop day first.</div>';return;}
+  const dropDays=[...scanDropSel],dropLen=dropDays.length;
+  const mode=document.querySelector('input[name="scan-mode"]:checked').value;
+  const hasFilters=avoidSel.size>0;
+  const winBlocked=days=>days.some(d=>avoidSel.has(d));
+  let results=[];
+
+  if(mode==='single'){
+    const targetLen=parseInt(document.getElementById('single-length').value);
+    if(isNaN(targetLen)||targetLen<1){resultsEl.innerHTML='<div class="card" style="color:#d94040;font-weight:600">Select a target rotation length.</div>';return;}
+    for(const win of getWindows(targetLen)){
+      if(winBlocked(win))continue;
+      const ea=removeOverlap(win,dropDays),ed=removeOverlap(dropDays,win);
+      const{approved,reason,useHoliday}=coverageCheck(ed,ea);
+      if(approved)results.push({reason,useHoliday,trips:[win],totalDays:win.length,effectiveDrop:ed,effectiveAdd:ea});
+    }
+    results.sort((a,b)=>a.totalDays-b.totalDays);
+    renderScanResults(results,dropLen,'single',hasFilters);
+  } else {
+    const exactRots=parseInt(document.getElementById('combo-rot-count').value)||2;
+    const maxTotalDays=parseInt(document.getElementById('combo-max-days').value)||dropLen;
+    const allowed=getAllowedLens();
+    const allWindows=[];
+    for(let len=1;len<=maxTotalDays;len++){
+      if(!allowed.has(len))continue;
+      getWindows(len).forEach(w=>{if(!winBlocked(w))allWindows.push(w);});
+    }
+    const results_combo=[];
+    function genCombos(start,current,totalSoFar){
+      if(current.length===exactRots){
+        const combined=current.flat();
+        const unique=new Set(combined);
+        if(unique.size===combined.length&&combined.length<=maxTotalDays)results_combo.push([...current]);
+        return;
+      }
+      const remaining=exactRots-current.length;
+      for(let i=start;i<allWindows.length;i++){
+        const newTotal=totalSoFar+allWindows[i].length;
+        if(newTotal+remaining-1>maxTotalDays)continue;
+        genCombos(i+1,[...current,allWindows[i]],newTotal);
+      }
+    }
+    genCombos(0,[],0);
+    for(const trips of results_combo){
+      const all=[...new Set(trips.flat())];
+      const ea=removeOverlap(all,dropDays),ed=removeOverlap(dropDays,all);
+      const{approved,reason,useHoliday}=coverageCheck(ed,ea);
+      if(approved)results.push({reason,useHoliday,trips,totalDays:all.length,effectiveDrop:ed,effectiveAdd:ea});
+    }
+    const seen=new Set();
+    results=results.filter(r=>{const k=r.trips.map(t=>t.join('-')).sort().join('|');if(seen.has(k))return false;seen.add(k);return true;});
+    results.sort((a,b)=>a.totalDays-b.totalDays);results=results.slice(0,30);
+    renderScanResults(results,dropLen,'combo',hasFilters);
+  }
+}
+
+function renderScanResults(results,dropLen,mode,filtered){
+  const el=document.getElementById('scan-results');
+  const fn=filtered?' (after filters)':'';
+  if(!results.length){el.innerHTML=`<div class="card result-box result-no"><p class="result-title">No Valid Trades Found</p><p class="result-sub">No ${mode==='single'?'single rotation':'combination'} passes the coverage check${fn}.</p></div>`;return;}
+  let html=`<div class="card" style="background:#eef7e6;border:1.5px solid #4a8c1c;margin-bottom:10px"><p style="font-weight:800;color:#2a5c08;font-size:15px">✅ ${results.length} Valid Trade${results.length>1?'s':''} Found</p><p style="font-size:12px;color:#3a7010;margin-top:2px">Sorted by fewest working days · Drop: ${dropLen} days${fn}</p></div>`;
+  results.forEach((r,idx)=>{
+    const tl=r.trips.map(t=>`<b>${t[0]}</b><span style="font-size:9px;opacity:.7"> ${getDOW(t[0])}</span>–<b>${t[t.length-1]}</b><span style="font-size:9px;opacity:.7"> ${getDOW(t[t.length-1])}</span> (${t.length}d)`).join(' + ');
+    const sav=dropLen-r.totalDays;
+    const sb=sav>0?`<span style="font-size:11px;background:#2a5c08;color:#fff;padding:3px 10px;border-radius:12px;font-weight:800;white-space:nowrap">-${sav} day${sav>1?'s':''}</span>`:sav<0?`<span style="font-size:11px;background:#1a73e8;color:#fff;padding:3px 10px;border-radius:12px;font-weight:800;white-space:nowrap">+${Math.abs(sav)} extra</span>`:`<span style="font-size:11px;background:#666;color:#fff;padding:3px 10px;border-radius:12px;font-weight:800;white-space:nowrap">Same length</span>`;
+    const hf=r.useHoliday?'<span class="badge badge-hol">APD HOLIDAY</span>':'';
+    const dt=r.effectiveDrop.map(d=>{const c=covMap[d]!==undefined?covMap[d]:0,neg=c<0;const bg=neg?'#fde8e8':c===0?'#eee':'#eaf3de';const col=neg?'#7a1010':c===0?'#555':'#2a5c08';return`<span class="tag" style="background:${bg};color:${col};font-size:10px">${d}<span style="font-size:8px;opacity:.7"> ${getDOW(d)}</span> ${c>0?'+':''}${c}</span>`;}).join('');
+    const at=r.effectiveAdd.map(d=>{const c=covMap[d]!==undefined?covMap[d]:0;return`<span class="tag" style="background:#eaf3de;color:#2a5c08;border-color:#4a8c1c;font-size:10px">${d}<span style="font-size:8px;opacity:.7"> ${getDOW(d)}</span> ${c>0?'+':''}${c}</span>`;}).join('');
+    html+=`<div class="scan-result"><div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px;margin-bottom:6px"><div style="font-size:12px;color:#2a5c08;font-weight:700;flex:1">#${idx+1} ${tl} ${hf}</div>${sb}</div><div style="font-size:11px;color:#555;margin-bottom:6px"><b>${r.useHoliday?'Day-by-day':'Cumulative'}</b> · ${r.reason}</div>${r.effectiveDrop.length?`<div style="margin-bottom:4px"><span style="font-size:10px;font-weight:800;color:#d94040">▼ DROP: </span>${dt}</div>`:''}${r.effectiveAdd.length?`<div><span style="font-size:10px;font-weight:800;color:#4a8c1c">▲ ADD: </span>${at}</div>`:''}</div>`;
+  });
+  el.innerHTML=html;
+}
+
+// ── MAX DAYS OFF ─────────────────────────────────
+function toggleMaxOffWeekends(){
+  maxoffWeekendsActive=!maxoffWeekendsActive;
+  const btn=document.getElementById('maxoff-wknd-btn');
+  if(maxoffWeekendsActive){btn.className='action-btn warn-btn';btn.textContent='✕ Clear Weekend Avoidance';allDates.forEach(r=>{if(isWeekend(r.date))maxoffAvoidSel.add(r.date);});}
+  else{btn.className='action-btn';btn.textContent='🗓 Avoid All Weekends';allDates.forEach(r=>{if(isWeekend(r.date))maxoffAvoidSel.delete(r.date);});}
+  buildCalendarInto(document.getElementById('maxoff-avoid-cal'),'maxoff-avoid');
+}
+
+function renderMaxOffRotList(){
+  const el=document.getElementById('maxoff-rot-list');
+  if(!myRotations.length){el.innerHTML='<p style="font-size:12px;color:#888">Add rotations to My Schedule first.</p>';return;}
+  el.innerHTML=myRotations.map((t,i)=>`
+    <label class="cb-row">
+      <input type="checkbox" id="maxoff-cb-${i}" checked>
+      <div><div style="font-weight:700;font-size:13px;color:#1558b0">✈️ ${t.name}</div><div style="font-size:11px;color:#666">${t.days.join(', ')}</div></div>
+    </label>`).join('');
+}
+
+function runMaxDaysOff(){
+  const resEl=document.getElementById('maxoff-results');resEl.innerHTML='';
+  if(!myRotations.length){resEl.innerHTML='<div class="card" style="color:#d94040;font-weight:600">Add rotations to My Schedule first.</div>';return;}
+  const selectedRots=myRotations.filter((t,i)=>{const cb=document.getElementById(`maxoff-cb-${i}`);return cb&&cb.checked;});
+  if(!selectedRots.length){resEl.innerHTML='<div class="card" style="color:#d94040;font-weight:600">Select at least one rotation to try dropping.</div>';return;}
+
+  // Kept rotation days are unavailable for pickup
+  const keptWorkingDays=new Set();
+  myRotations.forEach((t,i)=>{const cb=document.getElementById(`maxoff-cb-${i}`);if(!(cb&&cb.checked))t.days.forEach(d=>keptWorkingDays.add(d));});
+
+  const allDropDays=[...new Set(selectedRots.flatMap(t=>t.days))];
+  const dropLen=allDropDays.length;
+
+  // Available pickup days: in table, not in maxoffAvoidSel, not kept working days
+  const availablePickupDays=allDates.map(r=>r.date).filter(d=>!maxoffAvoidSel.has(d)&&!keptWorkingDays.has(d));
+
+  resEl.innerHTML='<div class="card" style="color:#0097a7;font-weight:600">⏳ Searching... this may take a moment.</div>';
+
+  // Use setTimeout to allow UI to update before heavy computation
+  setTimeout(()=>{
+    const results=[];
+    outer:
+    for(let pickLen=0;pickLen<=dropLen+2;pickLen++){
+      if(availablePickupDays.length<pickLen)break;
+      const combos=combinationsOf(availablePickupDays,pickLen);
+      for(const addDays of combos){
+        const effectiveDrop=removeOverlap(allDropDays,addDays);
+        const effectiveAdd=removeOverlap(addDays,allDropDays);
+        const{approved,reason,useHoliday}=coverageCheck(effectiveDrop,effectiveAdd);
+        if(approved){
+          results.push({addDays,effectiveDrop,effectiveAdd,reason,useHoliday,totalAddDays:addDays.length,savedDays:dropLen-addDays.length});
+          if(results.length>=5)break outer;
+        }
+      }
+    }
+
+    if(!results.length){
+      resEl.innerHTML=`<div class="card result-box result-no"><p class="result-title">No Valid Combination Found</p><p class="result-sub">Could not find pickup days to satisfy coverage requirements with your avoid filters.</p></div>`;
+      return;
+    }
+
+    let html=`<div class="card" style="background:#e0f7fa;border:1.5px solid #0097a7;margin-bottom:8px"><p style="font-weight:800;color:#006978;font-size:15px">★ Top ${results.length} Max Days Off Result${results.length>1?'s':''}</p><p style="font-size:12px;color:#00838f;margin-top:2px">Dropping: ${selectedRots.map(t=>t.name).join(' + ')} (${dropLen} days total)</p></div>`;
+    results.forEach((r,idx)=>{
+      const dropTagHtml=r.effectiveDrop.map(d=>{const c=covMap[d]!==undefined?covMap[d]:0,neg=c<0;const bg=neg?'#fde8e8':c===0?'#eee':'#eaf3de';const col=neg?'#7a1010':c===0?'#555':'#2a5c08';return`<span class="tag" style="background:${bg};color:${col};font-size:10px">${d}<span style="font-size:8px;opacity:.7"> ${getDOW(d)}</span> ${c>0?'+':''}${c}</span>`;}).join('');
+      const addTagHtml=r.effectiveAdd.map(d=>{const c=covMap[d]!==undefined?covMap[d]:0;return`<span class="tag" style="background:#eaf3de;color:#2a5c08;border-color:#4a8c1c;font-size:10px">${d}<span style="font-size:8px;opacity:.7"> ${getDOW(d)}</span> ${c>0?'+':''}${c}</span>`;}).join('');
+      html+=`<div class="maxoff-result">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px;margin-bottom:6px">
+          <div style="font-weight:800;font-size:13px;color:#006978">#${idx+1} — Pick up ${r.totalAddDays} day${r.totalAddDays!==1?'s':''}</div>
+          <span style="font-size:11px;background:#006978;color:#fff;padding:3px 10px;border-radius:12px;font-weight:800;white-space:nowrap">-${r.savedDays} day${r.savedDays!==1?'s':''} worked</span>
+        </div>
+        <div style="font-size:11px;color:#555;margin-bottom:6px"><b>${r.useHoliday?'Day-by-day':'Cumulative'}</b> · ${r.reason}</div>
+        ${r.effectiveDrop.length?`<div style="margin-bottom:4px"><span style="font-size:10px;font-weight:800;color:#d94040">▼ DROP: </span>${dropTagHtml}</div>`:''}
+        ${r.effectiveAdd.length?`<div><span style="font-size:10px;font-weight:800;color:#4a8c1c">▲ ADD: </span>${addTagHtml}</div>`:''}
+        ${!r.effectiveAdd.length?`<div style="font-size:12px;font-weight:700;color:#2a5c08">✅ Pure days off — no pickup needed!</div>`:''}
+      </div>`;
+    });
+    resEl.innerHTML=html;
+  },50);
+}
+
+function combinationsOf(arr,k){
+  if(k===0)return[[]];
+  if(arr.length<k)return[];
+  const result=[];
+  function pick(start,current){
+    if(current.length===k){result.push([...current]);return;}
+    for(let i=start;i<=arr.length-(k-current.length);i++){current.push(arr[i]);pick(i+1,current);current.pop();}
+  }
+  pick(0,[]);return result;
+}
+
+</script>
+
+</div><!-- end main-app -->
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, query, where, getDocs, doc, updateDoc, setDoc, getDoc, limit } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC1yqbVvvqP76RZ4qNXmap2pbR0AfxwPF8",
+  authDomain: "pcs-swap-tool.firebaseapp.com",
+  projectId: "pcs-swap-tool",
+  storageBucket: "pcs-swap-tool.firebasestorage.app",
+  messagingSenderId: "786168505785",
+  appId: "1:786168505785:web:09fe24b0917296ab6ec268"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
+
+const DEVICE_KEY = 'pcs_device_id';
+const LAST_CHECK_KEY = 'pcs_last_check';
+const CHECK_INTERVAL_MS = 12 * 60 * 60 * 1000; // 12 hours
+
+// ── Generate or retrieve a stable device ID ───────────────────────────
+// This persists in localStorage AND is stored in Firebase
+// Both the browser tab and standalone PWA share the same localStorage origin
+// so this ID is the bridge between them
+function getOrCreateDeviceId() {
+  let id = localStorage.getItem(DEVICE_KEY);
+  if (!id) {
+    const array = new Uint8Array(16);
+    crypto.getRandomValues(array);
+    id = Array.from(array).map(b => b.toString(16).padStart(2,'0')).join('');
+    localStorage.setItem(DEVICE_KEY, id);
+  }
+  return id;
+}
+
+function isStandalone() {
+  return window.navigator.standalone === true ||
+         window.matchMedia('(display-mode: standalone)').matches;
+}
+
+function showInstallScreen() {
+  document.getElementById('gate-screen').style.display = 'none';
+  document.getElementById('install-screen').style.display = 'flex';
+  // Start polling for standalone launch
+  waitForStandalone();
+}
+
+function grantAccess() {
+  document.getElementById('gate-screen').style.display = 'none';
+  document.getElementById('install-screen').style.display = 'none';
+  document.getElementById('main-app').style.display = 'block';
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
+}
+
+function showGateError(icon, title, sub) {
+  document.getElementById('gate-spinner').style.display = 'none';
+  document.getElementById('gate-icon').style.display = 'block';
+  document.getElementById('gate-icon').textContent = icon;
+  document.getElementById('gate-title').textContent = title;
+  document.getElementById('gate-sub').textContent = sub;
+  document.getElementById('gate-btn').style.display = 'block';
+}
+
+window.retryLoad = () => { window.location.reload(); };
+
+// ── Check if this device has an approved access record in Firebase ────
+async function checkDeviceAccess(deviceId) {
+  try {
+    const deviceDoc = await getDoc(doc(db, 'devices', deviceId));
+    if (!deviceDoc.exists()) return { granted: false, reason: 'no_record' };
+    const data = deviceDoc.data();
+    if (data.revoked) return { granted: false, reason: 'revoked' };
+    return { granted: true, data };
+  } catch (e) {
+    // If offline, trust localStorage flag
+    const lastCheck = parseInt(localStorage.getItem(LAST_CHECK_KEY) || '0');
+    const recentCheck = Date.now() - lastCheck < CHECK_INTERVAL_MS;
+    if (recentCheck) return { granted: true, offline: true };
+    return { granted: false, reason: 'offline' };
+  }
+}
+
+// ── Poll until user opens from home screen (standalone mode) ──────────
+function waitForStandalone() {
+  if (isStandalone()) {
+    grantAccess();
+    return;
+  }
+  setTimeout(waitForStandalone, 800);
+}
+
+// ── Main flow ─────────────────────────────────────────────────────────
+async function checkAccess() {
+  const deviceId = getOrCreateDeviceId();
+
+  // ── Path A: Already in standalone mode ───────────────────────────
+  if (isStandalone()) {
+    // Check Firebase for device access record
+    const { granted, reason, offline } = await checkDeviceAccess(deviceId);
+    if (granted) {
+      localStorage.setItem(LAST_CHECK_KEY, Date.now().toString());
+      grantAccess();
+    } else if (reason === 'revoked') {
+      showGateError('🚫', 'Access Revoked', 'Your access has been removed by the administrator.');
+    } else if (reason === 'offline') {
+      // Been offline too long without a check — still allow but warn
+      grantAccess();
+    } else {
+      // No device record — token was never validated
+      showGateError('🔒', 'Not Installed Properly', 'Please open your original install link in Safari and follow the setup steps again.');
+    }
+    return;
+  }
+
+  // ── Path B: In Safari browser (not standalone) ───────────────────
+  // First check if this device already has Firebase access record
+  const { granted } = await checkDeviceAccess(deviceId);
+  if (granted) {
+    // Already set up — just show install screen to get them into standalone
+    localStorage.setItem(LAST_CHECK_KEY, Date.now().toString());
+    showInstallScreen();
+    return;
+  }
+
+  // ── Path C: New device — need a token ────────────────────────────
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+
+  if (!token) {
+    showGateError('🔒', 'Access Required', 'You need a valid install link to access this tool. Contact the administrator.');
+    return;
+  }
+
+  try {
+    const q = query(collection(db, 'tokens'), where('token', '==', token), limit(1));
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+      showGateError('❌', 'Invalid Link', 'This install link is not valid. Contact the administrator for a new one.');
+      return;
+    }
+
+    const tokenDoc = snap.docs[0];
+    const data = tokenDoc.data();
+
+    if (data.expiresAt && new Date(data.expiresAt) < new Date()) {
+      showGateError('⏰', 'Link Expired', 'This install link has expired. Contact the administrator for a new one.');
+      return;
+    }
+
+    if (data.used) {
+      showGateError('🚫', 'Link Already Used', 'This install link has already been used. Each link is single-use only. Contact the administrator for a new one.');
+      return;
+    }
+
+    // Consume the token
+    await updateDoc(doc(db, 'tokens', tokenDoc.id), {
+      used: true,
+      usedAt: new Date().toISOString(),
+      userAgent: navigator.userAgent.slice(0, 200),
+      deviceId
+    });
+
+    // Create a device access record in Firebase
+    // This is what the standalone PWA will check on launch
+    await setDoc(doc(db, 'devices', deviceId), {
+      recipient: data.recipient || 'Unknown',
+      tokenId: tokenDoc.id,
+      grantedAt: new Date().toISOString(),
+      revoked: false,
+      deviceId
+    });
+
+    localStorage.setItem(LAST_CHECK_KEY, Date.now().toString());
+
+    // Clean token from URL
+    window.history.replaceState({}, '', window.location.pathname);
+
+    // Show install instructions
+    showInstallScreen();
+
+  } catch (e) {
+    showGateError('⚠️', 'Connection Error', 'Could not verify your access. Check your internet connection and try again.');
+  }
+}
+
+checkAccess();
+</script>
+
+</body>
+</html>
