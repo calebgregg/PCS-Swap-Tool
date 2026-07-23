@@ -2004,20 +2004,49 @@ const db = getFirestore(fbApp);
 
 const DEVICE_KEY = 'pcs_device_id';
 const LAST_CHECK_KEY = 'pcs_last_check';
-const CHECK_INTERVAL_MS = 12 * 60 * 60 * 1000; // 12 hours
+const CHECK_INTERVAL_MS = 12 * 60 * 60 * 1000;
 
-// ── Generate or retrieve a stable device ID ───────────────────────────
-// This persists in localStorage AND is stored in Firebase
-// Both the browser tab and standalone PWA share the same localStorage origin
-// so this ID is the bridge between them
+// ── Cookie helpers (shared between Safari browser + standalone PWA) ──
+// Cookies are the ONLY storage shared across both contexts on iOS
+function setCookie(name, value, days) {
+  const expires = new Date(Date.now() + days * 864e5).toUTCString();
+  // SameSite=Lax works for GitHub Pages; no Secure needed for localhost testing
+  document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires};path=/;SameSite=Lax`;
+}
+
+function getCookie(name) {
+  const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function deleteCookie(name) {
+  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;SameSite=Lax`;
+}
+
+// ── Device ID: stored in BOTH cookie and localStorage ────────────────
+// Cookie bridges Safari <-> standalone PWA
+// localStorage used as fast local cache
 function getOrCreateDeviceId() {
-  let id = localStorage.getItem(DEVICE_KEY);
-  if (!id) {
-    const array = new Uint8Array(16);
-    crypto.getRandomValues(array);
-    id = Array.from(array).map(b => b.toString(16).padStart(2,'0')).join('');
+  // Check cookie first (works across Safari + PWA)
+  let id = getCookie(DEVICE_KEY);
+  if (id) {
+    // Sync to localStorage as cache
     localStorage.setItem(DEVICE_KEY, id);
+    return id;
   }
+  // Check localStorage (fallback)
+  id = localStorage.getItem(DEVICE_KEY);
+  if (id) {
+    // Re-set cookie in case it expired
+    setCookie(DEVICE_KEY, id, 365);
+    return id;
+  }
+  // Brand new device
+  const array = new Uint8Array(16);
+  crypto.getRandomValues(array);
+  id = Array.from(array).map(b => b.toString(16).padStart(2,'0')).join('');
+  localStorage.setItem(DEVICE_KEY, id);
+  setCookie(DEVICE_KEY, id, 365);
   return id;
 }
 
@@ -2029,7 +2058,6 @@ function isStandalone() {
 function showInstallScreen() {
   document.getElementById('gate-screen').style.display = 'none';
   document.getElementById('install-screen').style.display = 'flex';
-  // Start polling for standalone launch
   waitForStandalone();
 }
 
@@ -2053,66 +2081,64 @@ function showGateError(icon, title, sub) {
 
 window.retryLoad = () => { window.location.reload(); };
 
-// ── Check if this device has an approved access record in Firebase ────
+// ── Firebase device record check ──────────────────────────────────────
 async function checkDeviceAccess(deviceId) {
   try {
     const deviceDoc = await getDoc(doc(db, 'devices', deviceId));
     if (!deviceDoc.exists()) return { granted: false, reason: 'no_record' };
     const data = deviceDoc.data();
     if (data.revoked) return { granted: false, reason: 'revoked' };
+    localStorage.setItem(LAST_CHECK_KEY, Date.now().toString());
     return { granted: true, data };
   } catch (e) {
-    // If offline, trust localStorage flag
+    // Offline — use cached check time
     const lastCheck = parseInt(localStorage.getItem(LAST_CHECK_KEY) || '0');
-    const recentCheck = Date.now() - lastCheck < CHECK_INTERVAL_MS;
-    if (recentCheck) return { granted: true, offline: true };
-    return { granted: false, reason: 'offline' };
+    const recentEnough = Date.now() - lastCheck < CHECK_INTERVAL_MS;
+    if (recentEnough) return { granted: true, offline: true };
+    // Has cookie device ID but can't reach Firebase and cache is stale
+    // Be lenient — let them in and check next time
+    return { granted: true, offline: true };
   }
 }
 
-// ── Poll until user opens from home screen (standalone mode) ──────────
+// ── Poll until standalone ─────────────────────────────────────────────
 function waitForStandalone() {
-  if (isStandalone()) {
-    grantAccess();
-    return;
-  }
+  if (isStandalone()) { grantAccess(); return; }
   setTimeout(waitForStandalone, 800);
 }
 
-// ── Main flow ─────────────────────────────────────────────────────────
+// ── Main access flow ──────────────────────────────────────────────────
 async function checkAccess() {
   const deviceId = getOrCreateDeviceId();
 
-  // ── Path A: Already in standalone mode ───────────────────────────
+  // Path A: Already in standalone mode
   if (isStandalone()) {
-    // Check Firebase for device access record
-    const { granted, reason, offline } = await checkDeviceAccess(deviceId);
+    // Device ID is in cookie — check Firebase for access record
+    const { granted, reason } = await checkDeviceAccess(deviceId);
     if (granted) {
-      localStorage.setItem(LAST_CHECK_KEY, Date.now().toString());
       grantAccess();
     } else if (reason === 'revoked') {
-      showGateError('🚫', 'Access Revoked', 'Your access has been removed by the administrator.');
-    } else if (reason === 'offline') {
-      // Been offline too long without a check — still allow but warn
-      grantAccess();
+      deleteCookie(DEVICE_KEY);
+      localStorage.removeItem(DEVICE_KEY);
+      showGateError('🚫', 'Access Revoked', 'Your access has been removed by the administrator. Please contact them for a new install link.');
     } else {
-      // No device record — token was never validated
-      showGateError('🔒', 'Not Installed Properly', 'Please open your original install link in Safari and follow the setup steps again.');
+      // No device record found — token was never validated on this device
+      // This can happen if cookie got set but Firebase write failed
+      // Show a friendlier message with retry
+      showGateError('🔒', 'Setup Incomplete', 'Your installation needs to be completed. Please open your original install link in Safari and follow the steps again.');
     }
     return;
   }
 
-  // ── Path B: In Safari browser (not standalone) ───────────────────
-  // First check if this device already has Firebase access record
-  const { granted } = await checkDeviceAccess(deviceId);
+  // Path B: In Safari browser — check if this device already has Firebase access
+  const { granted, reason } = await checkDeviceAccess(deviceId);
   if (granted) {
-    // Already set up — just show install screen to get them into standalone
-    localStorage.setItem(LAST_CHECK_KEY, Date.now().toString());
+    // Already set up on this device — just need to go to standalone
     showInstallScreen();
     return;
   }
 
-  // ── Path C: New device — need a token ────────────────────────────
+  // Path C: Need a token
   const params = new URLSearchParams(window.location.search);
   const token = params.get('token');
 
@@ -2143,7 +2169,7 @@ async function checkAccess() {
       return;
     }
 
-    // Consume the token
+    // Consume token
     await updateDoc(doc(db, 'tokens', tokenDoc.id), {
       used: true,
       usedAt: new Date().toISOString(),
@@ -2151,8 +2177,7 @@ async function checkAccess() {
       deviceId
     });
 
-    // Create a device access record in Firebase
-    // This is what the standalone PWA will check on launch
+    // Create device access record in Firebase
     await setDoc(doc(db, 'devices', deviceId), {
       recipient: data.recipient || 'Unknown',
       tokenId: tokenDoc.id,
@@ -2163,6 +2188,9 @@ async function checkAccess() {
 
     localStorage.setItem(LAST_CHECK_KEY, Date.now().toString());
 
+    // Ensure cookie is set with a long expiry so standalone mode can read it
+    setCookie(DEVICE_KEY, deviceId, 365);
+
     // Clean token from URL
     window.history.replaceState({}, '', window.location.pathname);
 
@@ -2170,6 +2198,7 @@ async function checkAccess() {
     showInstallScreen();
 
   } catch (e) {
+    console.error('Access check error:', e);
     showGateError('⚠️', 'Connection Error', 'Could not verify your access. Check your internet connection and try again.');
   }
 }
