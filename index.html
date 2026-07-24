@@ -200,6 +200,12 @@ table{border-collapse:collapse;width:100%}
   <button class="action-btn warn-btn" onclick="switchTab('coverage');document.getElementById('res-body').classList.add('open')" style="font-size:12px;padding:7px 12px;white-space:nowrap">Update Now</button>
 </div>
 
+<!-- iCREW IMPORT BANNER -->
+<div id="icrew-import-banner" style="display:none;background:#eef7e6;border:1.5px solid #4a8c1c;border-radius:10px;padding:10px 14px;margin-bottom:10px;align-items:center;gap:10px;flex-wrap:wrap">
+  <div style="font-size:13px;font-weight:700;color:#2a5c08">✅ Reserve table imported from iCrew</div>
+  <div style="font-size:11px;color:#3a7010">Coverage data loaded automatically</div>
+</div>
+
 <!-- DISCLAIMER -->
 <div style="font-size:11px;color:#7a4800;background:#fff8ee;border:1px solid #e8b86d;border-radius:10px;padding:10px 12px;margin-bottom:10px;line-height:1.5">⚠️ <b>Disclaimer:</b> Swap approvals are never guaranteed. Reserve coverage tables refresh throughout the PCS run window. Use this tool to focus your efforts on the most favorable swaps — always verify against live iCrew data before submitting.</div>
 
@@ -255,23 +261,33 @@ table{border-collapse:collapse;width:100%}
       <div id="adj-section" style="display:none;margin-top:12px;border-top:1px solid #eee;padding-top:12px">
         <p style="font-size:12px;font-weight:700;color:#555;margin-bottom:8px">Adjacent Bid Period Levels <span style="font-weight:400;color:#aaa">(optional)</span></p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-          <button class="action-btn adj-toggle-btn" id="btn-prev-adj" onclick="toggleAdjPanel('prev')" style="font-size:12px;flex:1">Previous Month</button>
-          <button class="action-btn adj-toggle-btn" id="btn-next-adj" onclick="toggleAdjPanel('next')" style="font-size:12px;flex:1">Next Month</button>
+          <button class="action-btn adj-toggle-btn" id="btn-prev-adj" onclick="toggleAdjPanel('prev')" style="font-size:12px;flex:1">Preceding Month</button>
+          <button class="action-btn adj-toggle-btn" id="btn-next-adj" onclick="toggleAdjPanel('next')" style="font-size:12px;flex:1">Future Month</button>
         </div>
         <div id="prev-adj-panel" style="display:none;margin-bottom:8px;padding:10px;background:#f5f7ff;border-radius:10px;border:1.5px solid #1a73e8">
-          <p style="font-size:11px;font-weight:700;color:#1a73e8;margin-bottom:6px">Previous Month Table</p>
+          <p style="font-size:11px;font-weight:700;color:#1a73e8;margin-bottom:6px">Preceding Month Table</p>
           <textarea id="paste-prev" placeholder="Paste previous bid period table..."></textarea>
-          <button class="action-btn success-btn" onclick="loadAdjTable('prev')" style="width:100%;margin-top:6px;font-size:12px">Load Previous Month</button>
+          <button class="action-btn success-btn" onclick="loadAdjTable('prev')" style="width:100%;margin-top:6px;font-size:12px">Load Preceding Month</button>
           <p id="prev-adj-status" style="font-size:11px;color:#4a8c1c;margin-top:4px;display:none">✅ Previous month loaded</p>
         </div>
         <div id="next-adj-panel" style="display:none;padding:10px;background:#f5f7ff;border-radius:10px;border:1.5px solid #1a73e8">
-          <p style="font-size:11px;font-weight:700;color:#1a73e8;margin-bottom:6px">Next Month Table</p>
+          <p style="font-size:11px;font-weight:700;color:#1a73e8;margin-bottom:6px">Future Month Table</p>
           <textarea id="paste-next" placeholder="Paste next bid period table..."></textarea>
-          <button class="action-btn success-btn" onclick="loadAdjTable('next')" style="width:100%;margin-top:6px;font-size:12px">Load Next Month</button>
+          <button class="action-btn success-btn" onclick="loadAdjTable('next')" style="width:100%;margin-top:6px;font-size:12px">Load Future Month</button>
           <p id="next-adj-status" style="font-size:11px;color:#4a8c1c;margin-top:4px;display:none">✅ Next month loaded</p>
         </div>
       </div>
       <p id="load-status" style="font-size:11px;color:#888;margin-top:8px"></p>
+      <!-- iCrew Shortcut Install -->
+      <div style="margin-top:12px;border-top:1px solid #eee;padding-top:12px">
+        <p style="font-size:12px;font-weight:700;color:#555;margin-bottom:4px">📲 Auto-Import from iCrew</p>
+        <p style="font-size:11px;color:#888;margin-bottom:8px;line-height:1.5">Skip the copy-paste. Use the iCrew bookmarklet to import the reserve table in one tap.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <a href="icrew_bookmarklet.html" target="_blank" class="action-btn primary-btn" style="font-size:12px;padding:8px 14px;text-decoration:none;flex:1;justify-content:center">🔖 Mac Bookmarklet Setup</a>
+          <button onclick="showIosShortcutInstructions()" class="action-btn" style="font-size:12px;padding:8px 14px;flex:1">📱 iPhone Shortcut</button>
+        </div>
+      </div>
+
       <!-- Coverage calendar (read-only) -->
       <div id="coverage-cal-wrap" style="display:none;margin-top:12px;border-top:1px solid #eee;padding-top:12px">
         <p style="font-size:12px;font-weight:700;color:#555;margin-bottom:8px">Coverage Calendar</p>
@@ -429,13 +445,131 @@ table{border-collapse:collapse;width:100%}
   <div id="maxoff-results"></div>
 </div>
 
+
+<!-- iCREW IMPORT PERIOD MODAL -->
+
+<!-- iOS SHORTCUT INSTRUCTIONS MODAL -->
+<div id="ios-shortcut-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:950;align-items:flex-start;justify-content:center;padding:20px;padding-top:40px;overflow-y:auto">
+  <div style="background:#fff;border-radius:16px;padding:24px;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+    <div style="font-size:18px;font-weight:800;color:#1a73e8;margin-bottom:4px">📱 iPhone Shortcut Setup</div>
+    <p style="font-size:12px;color:#888;margin-bottom:16px">Import iCrew data with one tap from the Share Sheet</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div style="width:24px;height:24px;border-radius:50%;background:#1a73e8;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
+        <div style="font-size:13px;color:#333"><strong>Open the Shortcuts app</strong> on your iPhone and tap the <strong>＋</strong> button to create a new shortcut.</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div style="width:24px;height:24px;border-radius:50%;background:#1a73e8;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
+        <div style="font-size:13px;color:#333">Add action: <strong>Run JavaScript on Web Page</strong> — paste the script below.</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div style="width:24px;height:24px;border-radius:50%;background:#1a73e8;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
+        <div style="font-size:13px;color:#333">Add action: <strong>Open URLs</strong> — set URL to the result from step 2.</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div style="width:24px;height:24px;border-radius:50%;background:#1a73e8;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">4</div>
+        <div style="font-size:13px;color:#333">Enable <strong>Show in Share Sheet</strong> in shortcut settings. Name it <strong>iCrew → PCS Swap</strong>.</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div style="width:24px;height:24px;border-radius:50%;background:#1a73e8;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">5</div>
+        <div style="font-size:13px;color:#333">In iCrew on the <strong>Reserve Requirements</strong> screen, tap Share → <strong>iCrew → PCS Swap</strong>.</div>
+      </div>
+    </div>
+    <p style="font-size:11px;font-weight:700;color:#555;margin-bottom:6px">JavaScript to paste:</p>
+    <div id="shortcut-script-box" style="background:#f5f7ff;border:1.5px solid #1a73e8;border-radius:8px;padding:10px;font-family:monospace;font-size:9px;word-break:break-all;color:#1558b0;margin-bottom:8px;max-height:120px;overflow-y:auto;user-select:all"></div>
+    <button onclick="copyShortcutScript()" style="width:100%;padding:10px;border-radius:10px;border:none;background:#1a73e8;color:#fff;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px" id="copy-shortcut-btn">📋 Copy Script</button>
+    <button onclick="document.getElementById('ios-shortcut-modal').style.display='none'" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #ddd;background:#f5f5f5;color:#888;font-size:13px;font-weight:600;cursor:pointer">Close</button>
+  </div>
+</div>
+
+<div id="icrew-modal-backdrop" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:950;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:16px;padding:24px;width:100%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+    <div style="font-size:18px;font-weight:800;color:#1a73e8;margin-bottom:4px">📊 iCrew Import</div>
+    <div style="font-size:13px;color:#888;margin-bottom:16px" id="icrew-modal-count"></div>
+    <p style="font-size:13px;font-weight:700;color:#333;margin-bottom:10px">Which bid period is this table for?</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+      <button onclick="confirmIcrewImport('primary')" style="padding:12px;border-radius:10px;border:1.5px solid #1a73e8;background:#e8f0fe;color:#1558b0;font-size:14px;font-weight:700;cursor:pointer;text-align:left">📅 Primary Month<br><span style="font-size:11px;font-weight:400;color:#888">Current bid period you are working</span></button>
+      <button onclick="confirmIcrewImport('preceding')" style="padding:12px;border-radius:10px;border:1.5px solid #c9a0e8;background:#f5eeff;color:#5a2d82;font-size:14px;font-weight:700;cursor:pointer;text-align:left">◀ Preceding Month<br><span style="font-size:11px;font-weight:400;color:#888">Previous bid period (carry-in rotations)</span></button>
+      <button onclick="confirmIcrewImport('future')" style="padding:12px;border-radius:10px;border:1.5px solid #80cbc4;background:#e0f7fa;color:#006978;font-size:14px;font-weight:700;cursor:pointer;text-align:left">▶ Future Month<br><span style="font-size:11px;font-weight:400;color:#888">Next bid period (carry-out rotations)</span></button>
+    </div>
+    <button onclick="closeIcrewModal()" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #ddd;background:#f5f5f5;color:#888;font-size:13px;font-weight:600;cursor:pointer">Cancel</button>
+  </div>
+</div>
+
 </div><!-- end main-app -->
 
 <!-- Version corner badge -->
 <div class="version-corner" id="version-corner"></div>
 
 
+
 <script>
+
+// ── iCREW IMPORT ────────────────────────────────────────────────────
+let pendingIcrewData = null;
+
+function showIcrewImportModal(data, rowCount) {
+  pendingIcrewData = data;
+  document.getElementById('icrew-modal-count').textContent = `${rowCount} days extracted from iCrew`;
+  document.getElementById('icrew-modal-backdrop').style.display = 'flex';
+}
+
+function closeIcrewModal() {
+  document.getElementById('icrew-modal-backdrop').style.display = 'none';
+  pendingIcrewData = null;
+}
+
+function confirmIcrewImport(period) {
+  closeIcrewModal();
+  if(!pendingIcrewData) return;
+  if(period === 'primary') {
+    processTableLoad(pendingIcrewData);
+  } else if(period === 'preceding') {
+    saveTableLS(pendingIcrewData, 'prev');
+    adjPrevData = parseLines(pendingIcrewData.split('\n').filter(l=>l.trim()));
+    adjPrevData.forEach(r=>{covMap[r.date]=r.avail-r.reqd;});
+    rebuildAllDates();refreshAllCals();buildCovTable();
+    const statusEl = document.getElementById('prev-adj-status');
+    if(statusEl) statusEl.style.display = 'block';
+    const btn = document.getElementById('btn-prev-adj');
+    if(btn){btn.classList.add('adj-active');btn.style.background='#4a8c1c';btn.style.borderColor='#2d6010';}
+  } else if(period === 'future') {
+    saveTableLS(pendingIcrewData, 'next');
+    adjNextData = parseLines(pendingIcrewData.split('\n').filter(l=>l.trim()));
+    adjNextData.forEach(r=>{covMap[r.date]=r.avail-r.reqd;});
+    rebuildAllDates();refreshAllCals();buildCovTable();
+    const statusEl = document.getElementById('next-adj-status');
+    if(statusEl) statusEl.style.display = 'block';
+    const btn = document.getElementById('btn-next-adj');
+    if(btn){btn.classList.add('adj-active');btn.style.background='#4a8c1c';btn.style.borderColor='#2d6010';}
+  }
+  // Show success banner
+  const banner = document.getElementById('icrew-import-banner');
+  if(banner){banner.style.display='flex';setTimeout(()=>banner.style.display='none',4000);}
+  // Switch to coverage tab
+  switchTab('coverage');
+  pendingIcrewData = null;
+}
+
+// ── iOS SHORTCUT SCRIPT ───────────────────────────────────────────────
+const PCS_TOOL_URL = 'https://calebgregg.github.io/PCS-Swap-Tool/index.html';
+
+const SHORTCUT_SCRIPT = `var src=window;try{if(window.frames[0]&&window.frames[0].document.querySelectorAll('table').length>0)src=window.frames[0];}catch(e){}var rows=[];Array.from(src.document.querySelectorAll('table')).forEach(function(t){Array.from(t.rows).forEach(function(r){var text=r.innerText.trim();var parts=text.split('\t').map(function(p){return p.trim();}).filter(function(p){return p.length>0;});if(parts.length>=3&&parts[0].match(/^\d{2}[A-Z]{3}$/)&&parts[1].match(/^\d+$/)&&parts[2].match(/^\d+$/)){rows.push(parts[0]+' '+parts[1]+' '+parts[2]);}});});if(rows.length===0){completion('ERROR:No reserve data found. Make sure you are on the Reserve Requirements screen.');}else{completion('${PCS_TOOL_URL}?icrew='+encodeURIComponent(rows.join('\n')));}`;
+
+function showIosShortcutInstructions() {
+  const box = document.getElementById('shortcut-script-box');
+  if(box) box.textContent = SHORTCUT_SCRIPT;
+  document.getElementById('ios-shortcut-modal').style.display = 'flex';
+}
+
+function copyShortcutScript() {
+  navigator.clipboard.writeText(SHORTCUT_SCRIPT).then(() => {
+    const btn = document.getElementById('copy-shortcut-btn');
+    if(btn){btn.textContent='✅ Copied!';setTimeout(()=>btn.textContent='📋 Copy Script',2000);}
+  });
+}
+
+
 
 // ═══════════════════════════════════════════════
 // STATE
@@ -448,7 +582,7 @@ const maxoffAvoidSel=new Set();
 let schedStartDay=null,schedLen=1,schedBodyOpen=false;
 let avoidWeekendsActive=false,maxoffWeekendsActive=false;
 
-const VERSION='v1.20250723.2';
+const VERSION='v1.20250724.1';
 
 const MONTH_MAP={JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11};
 const MN=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
@@ -586,13 +720,19 @@ function toggleCollapse(id){
 }
 
 function toggleSchedCollapse(){
-  if(!reserveData.length)return; // locked until table loaded
+  if(!reserveData.length){
+    // Show a brief hint that table needs loading first
+    const badge=document.getElementById('sched-no-table-badge');
+    if(badge){badge.style.background='#fff3d6';badge.style.color='#854F0B';setTimeout(()=>{badge.style.background='';badge.style.color='';},1200);}
+    return;
+  }
   const body=document.getElementById('sched-body');
   const arrow=document.getElementById('sched-arrow');
+  if(!body)return;
   const isOpen=body.classList.contains('open');
   body.classList.toggle('open',!isOpen);
   if(arrow)arrow.style.transform=isOpen?'':'rotate(180deg)';
-  if(!isOpen&&reserveData.length)buildSchedAddCal();
+  if(!isOpen){buildSchedAddCal();renderScheduleList();}
 }
 
 function toggleSchedBody(){
@@ -622,14 +762,28 @@ function setSchedLen(n){schedLen=n;updateLenBtns('slb',n);}
 function updateLenBtns(prefix,n){for(let i=1;i<=5;i++){const b=document.getElementById(prefix+i);if(b)b.className='action-btn'+(i===n?' primary-btn':'');}}
 function addSchedRot(){
   if(!schedStartDay){alert('Select a start day on the calendar first.');return;}
-  addRotObj(schedStartDay,schedLen);schedStartDay=null;sortRotations();renderScheduleList();
+  addRotObj(schedStartDay,schedLen);
+  schedStartDay=null;
+  sortRotations();
+  saveRots();
+  renderScheduleList();
   updateLenBtns('slb',1);schedLen=1;
-  if(reserveData.length){refreshAllCals();buildSchedAddCal();}
+  if(reserveData.length){
+    refreshAllCals();   // updates drop/add/scan calendars
+    buildSchedAddCal(); // rebuild sched cal immediately
+    rebuildAvoidForSchedule();
+  }
   renderMaxOffRotList();
 }
 function removeRot(idx){
-  myRotations.splice(idx,1);sortRotations();saveRots();updateSchedSub();renderScheduleList();
-  if(reserveData.length){refreshAllCals();rebuildAvoidForSchedule();buildSchedAddCal();}
+  myRotations.splice(idx,1);
+  sortRotations();saveRots();updateSchedSub();renderScheduleList();
+  if(reserveData.length){
+    refreshAllCals();
+    rebuildAvoidForSchedule();
+    buildSchedAddCal();
+    buildCoverageCalendar(document.getElementById('coverage-cal'));
+  }
   renderMaxOffRotList();
 }
 function addRotObj(startLabel,len){
@@ -698,33 +852,33 @@ function loadSavedTable(){
 }
 function finishLoad(){
   dropSel.clear();addSel.clear();scanDropSel.clear();avoidSel.clear();
-  document.getElementById('main').style.display='block';
-  const hhmm=loadTime?loadTime.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
+  // Update saved banner
   const tz=getTZAbbr();
+  const hhmm=loadTime?loadTime.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
   const tsLabel=hhmm?(hhmm+(tz?' '+tz:'')):'';
   const statusText=`✅ ${reserveData.length} days loaded${tsLabel?' at '+tsLabel:''}`;
-  document.getElementById('load-status').textContent=statusText;
-  {const rs=document.getElementById('res-sub');if(rs)rs.textContent=statusText.replace('✅ ','');}
-  // reserve section stays open for re-uploads
-  {const nb=document.getElementById('sched-no-table-btn');if(nb)nb.style.display='none';}
-  {const sb=document.getElementById('sched-toggle-btn');if(sb)sb.style.display='';}
-  {const rs=document.getElementById('res-sub');if(rs){const t=document.getElementById('load-status').textContent;rs.textContent=t.replace('\u2705 ','');}}
+  {const el=document.getElementById('load-status');if(el)el.textContent=statusText;}
+  {const el=document.getElementById('res-sub');if(el)el.textContent=statusText.replace('✅ ','');}
+  {const el=document.getElementById('saved-table-ts');if(el)el.textContent=statusText.replace('✅ ','');}
+  {const el=document.getElementById('saved-table-banner');if(el)el.style.display='flex';}
+  {const el=document.getElementById('paste-first');if(el)el.style.display='none';}
+  {const el=document.getElementById('paste-update');if(el)el.style.display='none';}
+  // Unlock schedule section — hide badge, show normal collapse
+  {const el=document.getElementById('sched-no-table-badge');if(el)el.style.display='none';}
+  // Show adj section and coverage calendar
+  {const el=document.getElementById('adj-section');if(el)el.style.display='block';}
+  {const el=document.getElementById('coverage-cal-wrap');if(el)el.style.display='block';}
   sortRotations();buildCovTable();refreshAllCals();renderScheduleList();
-  // Unlock schedule section
-  const badge=document.getElementById('sched-no-table-badge');
-  if(badge)badge.style.display='none';
-  // Show coverage calendar wrap
-  const ccw=document.getElementById('coverage-cal-wrap');
-  if(ccw)ccw.style.display='block';
-  // Show adj section
-  const adjSec=document.getElementById('adj-section');
-  if(adjSec)adjSec.style.display='block';
-  updateSchedCalVisibility();if(schedBodyOpen)buildSchedAddCal();
+  // Rebuild sched calendar if body is open
+  const schedBody=document.getElementById('sched-body');
+  if(schedBody&&schedBody.classList.contains('open'))buildSchedAddCal();
+  else buildSchedAddCal(); // build it anyway so it's ready
   rebuildAvoidForSchedule();evaluate();updateLengthOptions();
-  document.getElementById('scan-results').innerHTML='';
+  {const el=document.getElementById('scan-results');if(el)el.innerHTML='';}
   buildCoverageCalendar(document.getElementById('coverage-cal'));
   renderMaxOffRotList();
   buildCalendarInto(document.getElementById('maxoff-avoid-cal'),'maxoff-avoid');
+  checkPCSStale();
 }
 function refreshAllCals(){
   buildCalendarInto(document.getElementById('drop-cal'),'drop');
@@ -1121,13 +1275,78 @@ function buildCoverageCalendar(container){
   }
   container.appendChild(wrap);
 }
+
+// ── CROSS-BID PERIOD LOGIC ────────────────────────────────────────────
+// Line bidding closes at 1800 EST on the 11th of the prior month
+function isBiddingClosedForMonth(monthIdx, year){
+  // monthIdx: 0=Jan, 1=Feb...
+  // Bidding closes on the 11th of the PRIOR month at 1800 EST
+  const now=new Date();
+  const estNow=new Date(now.toLocaleString('en-US',{timeZone:'America/New_York'}));
+  // Prior month
+  const priorMonth=monthIdx===0?11:monthIdx-1;
+  const priorYear=monthIdx===0?year-1:year;
+  const closeDate=new Date(priorYear,priorMonth,11,18,0,0); // 1800 on 11th
+  // Convert closeDate to EST comparison
+  const closeDateEST=new Date(closeDate.toLocaleString('en-US',{timeZone:'America/New_York'}));
+  return estNow>=closeDateEST;
+}
+
+function getDayMonth(label){
+  const p=parseDate(label);
+  return p?p.month:null;
+}
+
+function isCrossPeriodDay(label, primaryDays){
+  // A day is "cross-period" if it's in a different month than the majority of primaryDays
+  if(!primaryDays||!primaryDays.length)return false;
+  const dayMonth=getDayMonth(label);
+  // Find primary month (most common month in primaryDays)
+  const monthCounts={};
+  primaryDays.forEach(d=>{const m=getDayMonth(d);if(m!==null)monthCounts[m]=(monthCounts[m]||0)+1;});
+  const primaryMonth=parseInt(Object.entries(monthCounts).sort((a,b)=>b[1]-a[1])[0][0]);
+  return dayMonth!==null&&dayMonth!==primaryMonth;
+}
+
+// Check if processing has started (20th of current month)
+function isCrossPeriodProcessingOpen(){
+  const now=new Date();
+  const estNow=new Date(now.toLocaleString('en-US',{timeZone:'America/New_York'}));
+  return estNow.getDate()>=20;
+}
+
 // ── COVERAGE CHECK ───────────────────────────────
 function coverageCheck(dropDays,addDays){
-  const dropNeg=dropDays.filter(d=>covMap[d]<0);
-  const addNeg=addDays.filter(d=>covMap[d]<0);
+  // Separate primary and cross-period days
+  const allDays=[...dropDays,...addDays];
+  
+  // For cross-period drop days: if bidding is still open for that month,
+  // assume sufficient coverage (skip from negative check)
+  // EXCEPT if they fall in an APD holiday period
+  const effectiveDropDays=dropDays.filter(d=>{
+    const crossPeriod=isCrossPeriodDay(d,dropDays);
+    if(!crossPeriod)return true; // primary period — always check
+    const p=parseDate(d);
+    if(!p)return true;
+    const biddingClosed=isBiddingClosedForMonth(p.month,baseYear);
+    if(biddingClosed)return true; // bidding closed — apply actual check
+    if(isAPD(d))return true; // holiday exception — apply actual check
+    return false; // bidding open + not holiday = assumed sufficient, skip
+  });
+  
+  const dropNeg=effectiveDropDays.filter(d=>covMap[d]!==undefined&&covMap[d]<0);
+  const addNeg=addDays.filter(d=>covMap[d]!==undefined&&covMap[d]<0);
   const dropNegSum=dropNeg.reduce((s,d)=>s+covMap[d],0);
   const addNegSum=addNeg.reduce((s,d)=>s+covMap[d],0);
-  const useHoliday=dropDays.some(d=>isAPD(d));
+  const useHoliday=effectiveDropDays.some(d=>isAPD(d));
+  const hasCrossPeriod=dropDays.some(d=>isCrossPeriodDay(d,dropDays));
+  const crossPeriodAssumed=hasCrossPeriod&&dropDays.some(d=>{
+    const crossPeriod=isCrossPeriodDay(d,dropDays);
+    if(!crossPeriod)return false;
+    const p=parseDate(d);if(!p)return false;
+    return !isBiddingClosedForMonth(p.month,baseYear)&&!isAPD(d);
+  });
+  
   let approved=false,reason='';
   if(!useHoliday){
     if(!dropNeg.length){approved=true;reason='No negative drop days — auto-approved.';}
@@ -1135,9 +1354,15 @@ function coverageCheck(dropDays,addDays){
     else reason=`Add total (${addNegSum}) not worse than drop total (${dropNegSum}).`;
   } else {
     if(!dropNeg.length){approved=true;reason='No negative drop days — auto-approved.';}
-    else{let bad=null;for(const d of dropNeg){if(!addDays.some(a=>covMap[a]<covMap[d])){bad=d;break;}}approved=!bad;reason=approved?'Every neg drop day has a worse add day.':`${bad} (${covMap[bad]}) has no worse add day.`;}
+    else{let bad=null;for(const d of dropNeg){if(!addDays.some(a=>covMap[a]!==undefined&&covMap[a]<covMap[d])){bad=d;break;}}approved=!bad;reason=approved?'Every neg drop day has a worse add day.':`${bad} (${covMap[bad]}) has no worse add day.`;}
   }
-  return{approved,reason,useHoliday,dropNeg,addNeg,dropNegSum,addNegSum};
+  
+  // Add cross-period processing warning
+  if(hasCrossPeriod&&!isCrossPeriodProcessingOpen()){
+    reason+=' ⚠️ Cross-period swap processing begins on the 20th.';
+  }
+  
+  return{approved,reason,useHoliday,dropNeg,addNeg,dropNegSum,addNegSum,crossPeriodAssumed,hasCrossPeriod};
 }
 
 // ── WILL IT SWAP ─────────────────────────────────
@@ -1149,13 +1374,15 @@ function evaluate(){
   const overlapDays=[...dropSel].filter(d=>addSel.has(d));
   const dropDays=[...dropSel].filter(d=>!addSel.has(d));
   const addDays=[...addSel].filter(d=>!dropSel.has(d));
-  const{approved,reason,useHoliday,dropNeg,addNeg,dropNegSum,addNegSum}=coverageCheck(dropDays,addDays);
+  const res=coverageCheck(dropDays,addDays);const{approved,reason,useHoliday,dropNeg,addNeg,dropNegSum,addNegSum,crossPeriodAssumed,hasCrossPeriod}=res;
   const makeTag=(d,side)=>{const c=covMap[d]!==undefined?covMap[d]:0,dow=getDOW(d);let bg,col,border;if(side==='drop'){bg=c<0?'#fde8e8':c===0?'#eee':'#eaf3de';col=c<0?'#7a1010':c===0?'#555':'#2a5c08';border=c<0?'#d94040':c===0?'#bbb':'#4a8c1c';}else{bg='#eaf3de';col='#2a5c08';border='#4a8c1c';}const hol=side==='drop'&&isAPD(d);return`<span class="tag" style="background:${bg};color:${col};border-color:${border}">${d} <span style="font-size:9px;opacity:.7">${dow}</span> <b>${c>0?'+':''}${c}</b>${hol?'<span class="badge badge-hol">HOL</span>':''}</span>`;};
   let bHtml='';
   if(overlapDays.length){bHtml+=`<p style="margin-bottom:6px"><b>Overlapping (skipped):</b> `;overlapDays.forEach(d=>bHtml+=`<span class="tag" style="background:rgba(130,50,180,.15);color:#4a0e7a;border-color:rgba(110,30,160,.5);text-decoration:line-through">${d} <span style="font-size:9px">${getDOW(d)}</span></span>`);bHtml+='</p>';}
   if(dropDays.length){bHtml+=`<p style="margin-bottom:4px;font-weight:800;font-size:12px;color:#d94040">▼ Drop:</p><div style="margin-bottom:8px">`;dropDays.forEach(d=>bHtml+=makeTag(d,'drop'));bHtml+='</div>';}
   if(addDays.length){bHtml+=`<p style="margin-bottom:4px;font-weight:800;font-size:12px;color:#4a8c1c">▲ Add:</p><div>`;addDays.forEach(d=>bHtml+=makeTag(d,'add'));bHtml+='</div>';}
   if(useHoliday)bHtml+=`<p style="margin-top:8px;font-size:11px;color:#854F0B;background:#fff3d6;padding:5px 10px;border-radius:6px;display:inline-block">⚠️ APD Holiday period — day-by-day check applies</p>`;
+  if(res.crossPeriodAssumed)bHtml+=`<p style="margin-top:6px;font-size:11px;color:#006978;background:#e0f7fa;padding:5px 10px;border-radius:6px;display:inline-block">📅 Cross-period days: coverage assumed sufficient (bidding still open)</p>`;
+  if(res.hasCrossPeriod&&!isCrossPeriodProcessingOpen())bHtml+=`<p style="margin-top:6px;font-size:11px;color:#854F0B;background:#fff3d6;padding:5px 10px;border-radius:6px;display:inline-block">⏳ Cross-period processing begins on the 20th of the month</p>`;
   bEl.innerHTML=bHtml;
   document.getElementById('s-drop').textContent=dropNeg.length?dropNegSum:'none';document.getElementById('s-drop').style.color=dropNeg.length?'#d94040':'#4a8c1c';
   document.getElementById('s-add').textContent=addNeg.length?addNegSum:'none';document.getElementById('s-add').style.color=addNeg.length?'#d94040':'#4a8c1c';
@@ -1404,10 +1631,11 @@ function combinationsOf(arr,k){
   pick(0,[]);return result;
 }
 
+
 </script>
 
-
 <script type="module">
+
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getFirestore, collection, query, where, getDocs, doc, updateDoc, setDoc, getDoc, limit } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
@@ -1486,6 +1714,25 @@ function grantAccess() {
   document.getElementById('gate-screen').style.display = 'none';
   document.getElementById('install-screen').style.display = 'none';
   document.getElementById('main-app').style.display = 'block';
+  // Check for iCrew auto-import parameter
+  const icrewParam = new URLSearchParams(window.location.search).get('icrew');
+  if(icrewParam) {
+    try {
+      const decoded = decodeURIComponent(icrewParam);
+      const rowCount = decoded.split('\n').filter(l=>l.trim()).length;
+      // Clean URL before showing modal
+      window.history.replaceState({}, '', window.location.pathname);
+      // Show period selection modal
+      setTimeout(() => {
+        if(typeof showIcrewImportModal === 'function') {
+          showIcrewImportModal(decoded, rowCount);
+        } else {
+          // Fallback: load as primary
+          processTableLoad(decoded);
+        }
+      }, 600);
+    } catch(e) { console.error('iCrew import error:', e); }
+  }
   // Show version badge
   const vb=document.getElementById('version-badge');if(vb)vb.textContent=typeof VERSION!=='undefined'?VERSION:'';
   const vc=document.getElementById('version-corner');if(vc)vc.textContent=typeof VERSION!=='undefined'?VERSION:'';
@@ -1588,14 +1835,17 @@ async function checkAccess() {
       return;
     }
 
-    if (data.used) {
-      showGateError('🚫', 'Link Already Used', 'This install link has already been used. Each link is single-use only. Contact the administrator for a new one.');
+    if (data.used && (data.installCount || 0) >= (data.maxInstalls || 1)) {
+      showGateError('🚫', 'Link Already Used', 'This install link has already been used the maximum number of times. Contact the administrator for a new one.');
       return;
     }
 
-    // Consume token
+    // Consume token — increment install count, mark used if at max
+    const newCount = (data.installCount || 0) + 1;
+    const maxInstalls = data.maxInstalls || 1;
     await updateDoc(doc(db, 'tokens', tokenDoc.id), {
-      used: true,
+      used: newCount >= maxInstalls,
+      installCount: newCount,
       usedAt: new Date().toISOString(),
       userAgent: navigator.userAgent.slice(0, 200),
       deviceId
@@ -1628,6 +1878,7 @@ async function checkAccess() {
 }
 
 checkAccess();
+
 </script>
 
 </body>
