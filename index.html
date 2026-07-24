@@ -43,9 +43,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .step-desc{font-size:12px;color:#777;margin-bottom:10px;line-height:1.4}
 .section-desc{font-size:12px;color:#777;margin-bottom:10px;line-height:1.4;padding:8px 10px;background:#f5f7ff;border-radius:8px;border-left:3px solid #1a73e8}
 /* Tab bar */
-.tab-bar{display:flex;gap:4px;margin-bottom:12px;background:#fff;border-radius:14px;padding:4px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
-.tab-btn{flex:1;padding:9px 2px;font-size:11px;font-weight:700;border-radius:10px;border:none;background:transparent;color:#888;cursor:pointer;text-align:center;min-height:44px;line-height:1.2}
-.tab-btn.active{background:#1a73e8;color:#fff;box-shadow:0 2px 6px rgba(26,115,232,.35)}
+.tab-bar{display:flex;gap:0;background:#fff;border-top:1px solid #e0e0e0;position:fixed;bottom:0;left:0;right:0;z-index:100;padding:0 0 env(safe-area-inset-bottom) 0;box-shadow:0 -2px 10px rgba(0,0,0,.08)}
+.tab-btn{flex:1;padding:8px 2px 10px;font-size:10px;font-weight:700;border-radius:0;border:none;background:transparent;color:#999;cursor:pointer;text-align:center;min-height:54px;line-height:1.3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.tab-btn .tab-icon{font-size:20px;line-height:1}
+.tab-btn .tab-label{font-size:10px;font-weight:600}
+.tab-btn.active{color:#1a73e8;background:#f0f5ff}
+
 /* Buttons */
 .action-btn{font-size:13px;padding:10px 16px;border-radius:10px;border:1.5px solid #ddd;background:#f5f5f5;color:#333;cursor:pointer;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-weight:600}
 .primary-btn{background:#1a73e8;border-color:#1558b0;color:#fff}
@@ -125,7 +128,6 @@ table{border-collapse:collapse;width:100%}
 .disclaimer{font-size:11px;color:#888;background:#fff8ee;border:1px solid #e8b86d;border-radius:8px;padding:8px 10px;margin-bottom:10px;line-height:1.4}
 .cb-row{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;cursor:pointer;min-height:36px}
 .cb-row input[type=checkbox]{width:18px;height:18px;cursor:pointer;flex-shrink:0}
-.version-corner{position:fixed;bottom:8px;right:10px;font-size:9px;color:#ccc;font-weight:600;z-index:100;pointer-events:none}
 @media(min-width:600px){
   .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .grid-2>.card{margin-bottom:0}
@@ -184,7 +186,7 @@ table{border-collapse:collapse;width:100%}
 </div>
 
 <!-- MAIN APP -->
-<div id="main-app" style="display:none">
+<div id="main-app" style="display:none;padding-bottom:70px">
 
 <div class="app-bar">
   <div class="app-title">✈️ PCS Swap Tool</div>
@@ -207,19 +209,19 @@ table{border-collapse:collapse;width:100%}
 </div>
 
 <!-- DISCLAIMER -->
-<div style="font-size:11px;color:#7a4800;background:#fff8ee;border:1px solid #e8b86d;border-radius:10px;padding:10px 12px;margin-bottom:10px;line-height:1.5">⚠️ <b>Disclaimer:</b> Swap approvals are never guaranteed. Reserve coverage tables refresh throughout the PCS run window. Use this tool to focus your efforts on the most favorable swaps — always verify against live iCrew data before submitting.</div>
+
 
 <!-- 4-TAB BAR -->
-<div style="font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;padding-left:2px">Select a Tool</div>
-<div class="tab-bar">
-  <button class="tab-btn" onclick="switchTab('coverage')" id="tab-coverage">📊<br>Coverage</button>
-  <button class="tab-btn active" onclick="switchTab('checker')" id="tab-checker">✅<br>Will it Swap</button>
-  <button class="tab-btn" onclick="switchTab('scanner')" id="tab-scanner">🔍<br>Trade Finder</button>
-  <button class="tab-btn" onclick="switchTab('maxoff')" id="tab-maxoff">★<br>Max Days Off</button>
+<div class="tab-bar" id="main-tab-bar">
+  <button class="tab-btn active" onclick="switchTab('coverage')" id="tab-coverage"><span class="tab-icon">📊</span><span class="tab-label">Coverage</span></button>
+  <button class="tab-btn" onclick="switchTab('checker')" id="tab-checker"><span class="tab-icon">✅</span><span class="tab-label">Will it Swap</span></button>
+  <button class="tab-btn" onclick="switchTab('scanner')" id="tab-scanner"><span class="tab-icon">🔍</span><span class="tab-label">Trade Finder</span></button>
+  <button class="tab-btn" onclick="switchTab('maxoff')" id="tab-maxoff"><span class="tab-icon">★</span><span class="tab-label">Max Days Off</span></button>
 </div>
 
 <!-- ══════════ COVERAGE & SCHEDULE TAB ══════════ -->
-<div id="pane-coverage" style="display:none">
+<div id="pane-coverage">
+  <div style="font-size:11px;color:#7a4800;background:#fff8ee;border:1px solid #e8b86d;border-radius:10px;padding:10px 12px;margin-bottom:10px;line-height:1.5">⚠️ <b>Disclaimer:</b> Swap approvals are never guaranteed. Reserve coverage tables refresh throughout the PCS run window. Use this tool to focus your efforts on the most favorable swaps — always verify against live iCrew data before submitting.</div>
 
   <!-- Reserve Coverage collapsible -->
   <div class="collapse-section">
@@ -334,7 +336,7 @@ table{border-collapse:collapse;width:100%}
 </div><!-- end pane-coverage -->
 
 <!-- ══════════ WILL IT SWAP ══════════ -->
-<div id="pane-checker">
+<div id="pane-checker" style="display:none">
   <div class="section-desc">Check specific calendar days to see if a PCS Swap with Pot request will be approved based on current reserve coverage.</div>
   <div class="grid-2">
     <div class="card">
@@ -498,9 +500,6 @@ table{border-collapse:collapse;width:100%}
 
 </div><!-- end main-app -->
 
-<!-- Version corner badge -->
-<div class="version-corner" id="version-corner"></div>
-
 
 
 <script>
@@ -554,7 +553,7 @@ function confirmIcrewImport(period) {
 // ── iOS SHORTCUT SCRIPT ───────────────────────────────────────────────
 const PCS_TOOL_URL = 'https://calebgregg.github.io/PCS-Swap-Tool/index.html';
 
-const SHORTCUT_SCRIPT = `var src=window;try{if(window.frames[0]&&window.frames[0].document.querySelectorAll('table').length>0)src=window.frames[0];}catch(e){}var rows=[];Array.from(src.document.querySelectorAll('table')).forEach(function(t){Array.from(t.rows).forEach(function(r){var text=r.innerText.trim();var parts=text.split('\t').map(function(p){return p.trim();}).filter(function(p){return p.length>0;});if(parts.length>=3&&parts[0].match(/^\d{2}[A-Z]{3}$/)&&parts[1].match(/^\d+$/)&&parts[2].match(/^\d+$/)){rows.push(parts[0]+' '+parts[1]+' '+parts[2]);}});});if(rows.length===0){completion('ERROR:No reserve data found. Make sure you are on the Reserve Requirements screen.');}else{completion('${PCS_TOOL_URL}?icrew='+encodeURIComponent(rows.join('\n')));}`;
+const SHORTCUT_SCRIPT = 'var src=window;try{if(window.frames[0]&&window.frames[0].document.querySelectorAll(\'table\').length>0)src=window.frames[0];}catch(e){}var rows=[];Array.from(src.document.querySelectorAll(\'table\')).forEach(function(t){Array.from(t.rows).forEach(function(r){var text=r.innerText.trim();var parts=text.split(\'\\t\').map(function(p){return p.trim();}).filter(function(p){return p.length>0;});if(parts.length>=3&&parts[0].match(/^\\d{2}[A-Z]{3}$/)&&parts[1].match(/^\\d+$/)&&parts[2].match(/^\\d+$/)){rows.push(parts[0]+\' \'+parts[1]+\' \'+parts[2]);}});});if(rows.length===0){completion(\'ERROR:No reserve data found. Make sure you are on the Reserve Requirements screen.\');}else{completion(\'${PCS_TOOL_URL}?icrew=\'+encodeURIComponent(rows.join(\'\\n\')));}';
 
 function showIosShortcutInstructions() {
   const box = document.getElementById('shortcut-script-box');
@@ -582,7 +581,7 @@ const maxoffAvoidSel=new Set();
 let schedStartDay=null,schedLen=1,schedBodyOpen=false;
 let avoidWeekendsActive=false,maxoffWeekendsActive=false;
 
-const VERSION='v1.20250724.1';
+const VERSION='v1.20250724.2';
 
 const MONTH_MAP={JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11};
 const MN=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
@@ -1735,7 +1734,6 @@ function grantAccess() {
   }
   // Show version badge
   const vb=document.getElementById('version-badge');if(vb)vb.textContent=typeof VERSION!=='undefined'?VERSION:'';
-  const vc=document.getElementById('version-corner');if(vc)vc.textContent=typeof VERSION!=='undefined'?VERSION:'';
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(() => {});
   }
