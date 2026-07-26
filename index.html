@@ -43,12 +43,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .step-desc{font-size:12px;color:#777;margin-bottom:10px;line-height:1.4}
 .section-desc{font-size:12px;color:#777;margin-bottom:10px;line-height:1.4;padding:8px 10px;background:#f5f7ff;border-radius:8px;border-left:3px solid #1a73e8}
 /* Tab bar */
-.tab-bar{display:flex;gap:0;background:#fff;border-top:1px solid #e0e0e0;position:fixed;bottom:0;left:0;right:0;z-index:100;padding:0 0 env(safe-area-inset-bottom) 0;box-shadow:0 -2px 10px rgba(0,0,0,.08)}
-.tab-btn{flex:1;padding:8px 2px 10px;font-size:10px;font-weight:700;border-radius:0;border:none;background:transparent;color:#999;cursor:pointer;text-align:center;min-height:54px;line-height:1.3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
-.tab-btn .tab-icon{font-size:20px;line-height:1}
-.tab-btn .tab-label{font-size:10px;font-weight:600}
+.tab-bar{display:flex;gap:0;background:#fff;border-top:1px solid #e0e0e0;position:fixed;bottom:0;left:0;right:0;z-index:200;padding-bottom:max(env(safe-area-inset-bottom),8px);box-shadow:0 -2px 10px rgba(0,0,0,.08)}
+.tab-btn{flex:1;padding:10px 2px 12px;font-size:10px;font-weight:700;border:none;background:transparent;color:#999;cursor:pointer;text-align:center;min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.tab-btn .tab-icon{font-size:22px;line-height:1}
+.tab-btn .tab-label{font-size:10px;font-weight:600;line-height:1}
 .tab-btn.active{color:#1a73e8;background:#f0f5ff}
-
 /* Buttons */
 .action-btn{font-size:13px;padding:10px 16px;border-radius:10px;border:1.5px solid #ddd;background:#f5f5f5;color:#333;cursor:pointer;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-weight:600}
 .primary-btn{background:#1a73e8;border-color:#1558b0;color:#fff}
@@ -128,6 +127,7 @@ table{border-collapse:collapse;width:100%}
 .disclaimer{font-size:11px;color:#888;background:#fff8ee;border:1px solid #e8b86d;border-radius:8px;padding:8px 10px;margin-bottom:10px;line-height:1.4}
 .cb-row{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;cursor:pointer;min-height:36px}
 .cb-row input[type=checkbox]{width:18px;height:18px;cursor:pointer;flex-shrink:0}
+.version-corner{position:fixed;bottom:8px;right:10px;font-size:9px;color:#ccc;font-weight:600;z-index:100;pointer-events:none}
 @media(min-width:600px){
   .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .grid-2>.card{margin-bottom:0}
@@ -186,54 +186,55 @@ table{border-collapse:collapse;width:100%}
 </div>
 
 <!-- MAIN APP -->
-<div id="main-app" style="display:none;padding-bottom:70px">
+<div id="main-app" style="display:none;padding-bottom:100px">
 
-<div class="app-bar">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
   <div class="app-title">✈️ PCS Swap Tool</div>
-  <div class="version-badge" id="version-badge"></div>
+  <div style="font-size:10px;color:#aaa;font-weight:600" id="version-badge"></div>
 </div>
 
 <!-- STALE DATA BANNER -->
 <div id="pcs-stale-banner" class="stale-banner" style="display:none">
   <div>
     <div style="font-size:13px;font-weight:700;color:#854F0B">📡 Reserve Table May Be Outdated</div>
-    <div style="font-size:11px;color:#a06010">A new PCS window has opened. Update your reserve levels for accurate results.</div>
+    <div style="font-size:11px;color:#a06010">A new PCS window has opened. Update your reserve levels.</div>
   </div>
-  <button class="action-btn warn-btn" onclick="switchTab('coverage');document.getElementById('res-body').classList.add('open')" style="font-size:12px;padding:7px 12px;white-space:nowrap">Update Now</button>
+  <button class="action-btn warn-btn" onclick="switchTab('coverage')" style="font-size:12px;padding:7px 12px;white-space:nowrap">Update Now</button>
 </div>
-
-<!-- iCREW IMPORT BANNER -->
-<div id="icrew-import-banner" style="display:none;background:#eef7e6;border:1.5px solid #4a8c1c;border-radius:10px;padding:10px 14px;margin-bottom:10px;align-items:center;gap:10px;flex-wrap:wrap">
-  <div style="font-size:13px;font-weight:700;color:#2a5c08">✅ Reserve table imported from iCrew</div>
-  <div style="font-size:11px;color:#3a7010">Coverage data loaded automatically</div>
-</div>
-
-<!-- DISCLAIMER -->
-
 
 <!-- 4-TAB BAR -->
-<div class="tab-bar" id="main-tab-bar">
-  <button class="tab-btn active" onclick="switchTab('coverage')" id="tab-coverage"><span class="tab-icon">📊</span><span class="tab-label">Coverage</span></button>
-  <button class="tab-btn" onclick="switchTab('checker')" id="tab-checker"><span class="tab-icon">✅</span><span class="tab-label">Will it Swap</span></button>
-  <button class="tab-btn" onclick="switchTab('scanner')" id="tab-scanner"><span class="tab-icon">🔍</span><span class="tab-label">Trade Finder</span></button>
-  <button class="tab-btn" onclick="switchTab('maxoff')" id="tab-maxoff"><span class="tab-icon">★</span><span class="tab-label">Max Days Off</span></button>
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('coverage')" id="tab-coverage">📊<br>Coverage</button>
+  <button class="tab-btn" onclick="switchTab('checker')" id="tab-checker">✅<br>Will it Swap</button>
+  <button class="tab-btn" onclick="switchTab('scanner')" id="tab-scanner">🔍<br>Trade Finder</button>
+  <button class="tab-btn" onclick="switchTab('maxoff')" id="tab-maxoff">★<br>Max Days Off</button>
 </div>
 
-<!-- ══════════ COVERAGE & SCHEDULE TAB ══════════ -->
+<!-- COVERAGE & SCHEDULE TAB -->
 <div id="pane-coverage">
-  <div style="font-size:11px;color:#7a4800;background:#fff8ee;border:1px solid #e8b86d;border-radius:10px;padding:10px 12px;margin-bottom:10px;line-height:1.5">⚠️ <b>Disclaimer:</b> Swap approvals are never guaranteed. Reserve coverage tables refresh throughout the PCS run window. Use this tool to focus your efforts on the most favorable swaps — always verify against live iCrew data before submitting.</div>
+  <!-- Coverage Calendar - always visible when table loaded -->
+  <div id="coverage-cal-card" style="display:none;background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06)">
+    <div style="font-size:14px;font-weight:700;color:#333;margin-bottom:10px">📅 Reserve Coverage</div>
+    <div class="cal-wrap"><div id="coverage-cal"></div></div>
+  </div>
+  <div style="font-size:11px;color:#7a4800;background:#fff8ee;border:1px solid #e8b86d;border-radius:10px;padding:10px 12px;margin-bottom:10px;line-height:1.5">⚠️ <b>Disclaimer:</b> Swap approvals are never guaranteed. Reserve coverage tables refresh throughout the PCS run window — always load the latest table before evaluating a swap.</div>
 
   <!-- Reserve Coverage collapsible -->
+  <!-- COVERAGE CALENDAR CARD (always visible when data loaded) -->
+  
+
   <div class="collapse-section">
-    <div class="collapse-header" onclick="toggleCollapse('res')">
-      <div style="display:flex;align-items:center">
+    <div class="collapse-header" style="cursor:default">
+      <div style="display:flex;align-items:center;flex:1" onclick="toggleCollapse('res')" style="cursor:pointer">
         <span class="collapse-icon">📊</span>
         <div>
           <div class="collapse-title">Reserve Coverage</div>
           <div class="collapse-sub" id="res-sub">Tap to load table</div>
         </div>
       </div>
-      <span class="collapse-arrow" id="res-arrow">▼</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="collapse-arrow" id="res-arrow" onclick="toggleCollapse('res')" style="cursor:pointer">▼</span>
+      </div>
     </div>
     <div class="collapse-body" id="res-body">
       <!-- Saved banner -->
@@ -280,23 +281,18 @@ table{border-collapse:collapse;width:100%}
         </div>
       </div>
       <p id="load-status" style="font-size:11px;color:#888;margin-top:8px"></p>
-      <!-- iCrew Shortcut Install -->
-      <div style="margin-top:12px;border-top:1px solid #eee;padding-top:12px">
-        <p style="font-size:12px;font-weight:700;color:#555;margin-bottom:4px">📲 Auto-Import from iCrew</p>
-        <p style="font-size:11px;color:#888;margin-bottom:8px;line-height:1.5">Skip the copy-paste. Use the iCrew bookmarklet to import the reserve table in one tap.</p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <a href="icrew_bookmarklet.html" target="_blank" class="action-btn primary-btn" style="font-size:12px;padding:8px 14px;text-decoration:none;flex:1;justify-content:center">🔖 Mac Bookmarklet Setup</a>
-          <button onclick="showIosShortcutInstructions()" class="action-btn" style="font-size:12px;padding:8px 14px;flex:1">📱 iPhone Shortcut</button>
-        </div>
       </div>
 
-      <!-- Coverage calendar (read-only) -->
-      <div id="coverage-cal-wrap" style="display:none;margin-top:12px;border-top:1px solid #eee;padding-top:12px">
-        <p style="font-size:12px;font-weight:700;color:#555;margin-bottom:8px">Coverage Calendar</p>
-        <div class="cal-wrap"><div id="coverage-cal"></div></div>
+      <!-- Coverage table (hidden, populated by buildCovTable) -->
+      <div id="cov-table-wrap" style="display:none;margin-top:10px;overflow-x:auto">
+        <table id="cov-table"></table>
       </div>
+      <!-- Coverage calendar (read-only) -->
+      
     </div>
-  </div>
+  
+
+  
 
   <!-- My Schedule collapsible — VISUALLY SEPARATE -->
   <div class="collapse-section">
@@ -444,129 +440,44 @@ table{border-collapse:collapse;width:100%}
     <div class="cal-wrap"><div id="maxoff-avoid-cal"></div></div>
   </div>
   <button class="action-btn teal-btn" onclick="runMaxDaysOff()" style="width:100%;margin-bottom:10px;font-size:14px;padding:14px">★ Find Max Days Off</button>
-  <div id="maxoff-results"></div>
-</div>
+  <!-- end main-app -->
 
-
-<!-- iCREW IMPORT PERIOD MODAL -->
-
-<!-- iOS SHORTCUT INSTRUCTIONS MODAL -->
-<div id="ios-shortcut-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:950;align-items:flex-start;justify-content:center;padding:20px;padding-top:40px;overflow-y:auto">
-  <div style="background:#fff;border-radius:16px;padding:24px;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,.2)">
-    <div style="font-size:18px;font-weight:800;color:#1a73e8;margin-bottom:4px">📱 iPhone Shortcut Setup</div>
-    <p style="font-size:12px;color:#888;margin-bottom:16px">Import iCrew data with one tap from the Share Sheet</p>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
-      <div style="display:flex;gap:10px;align-items:flex-start">
-        <div style="width:24px;height:24px;border-radius:50%;background:#1a73e8;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
-        <div style="font-size:13px;color:#333"><strong>Open the Shortcuts app</strong> on your iPhone and tap the <strong>＋</strong> button to create a new shortcut.</div>
-      </div>
-      <div style="display:flex;gap:10px;align-items:flex-start">
-        <div style="width:24px;height:24px;border-radius:50%;background:#1a73e8;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
-        <div style="font-size:13px;color:#333">Add action: <strong>Run JavaScript on Web Page</strong> — paste the script below.</div>
-      </div>
-      <div style="display:flex;gap:10px;align-items:flex-start">
-        <div style="width:24px;height:24px;border-radius:50%;background:#1a73e8;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
-        <div style="font-size:13px;color:#333">Add action: <strong>Open URLs</strong> — set URL to the result from step 2.</div>
-      </div>
-      <div style="display:flex;gap:10px;align-items:flex-start">
-        <div style="width:24px;height:24px;border-radius:50%;background:#1a73e8;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">4</div>
-        <div style="font-size:13px;color:#333">Enable <strong>Show in Share Sheet</strong> in shortcut settings. Name it <strong>iCrew → PCS Swap</strong>.</div>
-      </div>
-      <div style="display:flex;gap:10px;align-items:flex-start">
-        <div style="width:24px;height:24px;border-radius:50%;background:#1a73e8;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">5</div>
-        <div style="font-size:13px;color:#333">In iCrew on the <strong>Reserve Requirements</strong> screen, tap Share → <strong>iCrew → PCS Swap</strong>.</div>
-      </div>
-    </div>
-    <p style="font-size:11px;font-weight:700;color:#555;margin-bottom:6px">JavaScript to paste:</p>
-    <div id="shortcut-script-box" style="background:#f5f7ff;border:1.5px solid #1a73e8;border-radius:8px;padding:10px;font-family:monospace;font-size:9px;word-break:break-all;color:#1558b0;margin-bottom:8px;max-height:120px;overflow-y:auto;user-select:all"></div>
-    <button onclick="copyShortcutScript()" style="width:100%;padding:10px;border-radius:10px;border:none;background:#1a73e8;color:#fff;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px" id="copy-shortcut-btn">📋 Copy Script</button>
-    <button onclick="document.getElementById('ios-shortcut-modal').style.display='none'" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #ddd;background:#f5f5f5;color:#888;font-size:13px;font-weight:600;cursor:pointer">Close</button>
-  </div>
-</div>
-
-<div id="icrew-modal-backdrop" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:950;align-items:center;justify-content:center;padding:20px">
-  <div style="background:#fff;border-radius:16px;padding:24px;width:100%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,.2)">
-    <div style="font-size:18px;font-weight:800;color:#1a73e8;margin-bottom:4px">📊 iCrew Import</div>
-    <div style="font-size:13px;color:#888;margin-bottom:16px" id="icrew-modal-count"></div>
-    <p style="font-size:13px;font-weight:700;color:#333;margin-bottom:10px">Which bid period is this table for?</p>
-    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
-      <button onclick="confirmIcrewImport('primary')" style="padding:12px;border-radius:10px;border:1.5px solid #1a73e8;background:#e8f0fe;color:#1558b0;font-size:14px;font-weight:700;cursor:pointer;text-align:left">📅 Primary Month<br><span style="font-size:11px;font-weight:400;color:#888">Current bid period you are working</span></button>
-      <button onclick="confirmIcrewImport('preceding')" style="padding:12px;border-radius:10px;border:1.5px solid #c9a0e8;background:#f5eeff;color:#5a2d82;font-size:14px;font-weight:700;cursor:pointer;text-align:left">◀ Preceding Month<br><span style="font-size:11px;font-weight:400;color:#888">Previous bid period (carry-in rotations)</span></button>
-      <button onclick="confirmIcrewImport('future')" style="padding:12px;border-radius:10px;border:1.5px solid #80cbc4;background:#e0f7fa;color:#006978;font-size:14px;font-weight:700;cursor:pointer;text-align:left">▶ Future Month<br><span style="font-size:11px;font-weight:400;color:#888">Next bid period (carry-out rotations)</span></button>
-    </div>
-    <button onclick="closeIcrewModal()" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #ddd;background:#f5f5f5;color:#888;font-size:13px;font-weight:600;cursor:pointer">Cancel</button>
-  </div>
-</div>
-
-</div><!-- end main-app -->
 
 
 
 <script>
+const VERSION='v1.20250726.5';
 
-// ── iCREW IMPORT ────────────────────────────────────────────────────
-let pendingIcrewData = null;
+// ════════════════════════════════════════════
+// DEV_MODE: bypasses Firebase auth for testing
+// SET TO FALSE BEFORE PUSHING TO GITHUB
+const DEV_MODE = true;
+// ════════════════════════════════════════════
 
-function showIcrewImportModal(data, rowCount) {
-  pendingIcrewData = data;
-  document.getElementById('icrew-modal-count').textContent = `${rowCount} days extracted from iCrew`;
-  document.getElementById('icrew-modal-backdrop').style.display = 'flex';
-}
-
-function closeIcrewModal() {
-  document.getElementById('icrew-modal-backdrop').style.display = 'none';
-  pendingIcrewData = null;
-}
-
-function confirmIcrewImport(period) {
-  closeIcrewModal();
-  if(!pendingIcrewData) return;
-  if(period === 'primary') {
-    processTableLoad(pendingIcrewData);
-  } else if(period === 'preceding') {
-    saveTableLS(pendingIcrewData, 'prev');
-    adjPrevData = parseLines(pendingIcrewData.split('\n').filter(l=>l.trim()));
-    adjPrevData.forEach(r=>{covMap[r.date]=r.avail-r.reqd;});
-    rebuildAllDates();refreshAllCals();buildCovTable();
-    const statusEl = document.getElementById('prev-adj-status');
-    if(statusEl) statusEl.style.display = 'block';
-    const btn = document.getElementById('btn-prev-adj');
-    if(btn){btn.classList.add('adj-active');btn.style.background='#4a8c1c';btn.style.borderColor='#2d6010';}
-  } else if(period === 'future') {
-    saveTableLS(pendingIcrewData, 'next');
-    adjNextData = parseLines(pendingIcrewData.split('\n').filter(l=>l.trim()));
-    adjNextData.forEach(r=>{covMap[r.date]=r.avail-r.reqd;});
-    rebuildAllDates();refreshAllCals();buildCovTable();
-    const statusEl = document.getElementById('next-adj-status');
-    if(statusEl) statusEl.style.display = 'block';
-    const btn = document.getElementById('btn-next-adj');
-    if(btn){btn.classList.add('adj-active');btn.style.background='#4a8c1c';btn.style.borderColor='#2d6010';}
+// Fire gate bypass before anything else
+(function(){
+  if(!DEV_MODE) return;
+  function devUnlock(){
+    var g=document.getElementById('gate-screen');
+    var i=document.getElementById('install-screen');
+    var a=document.getElementById('main-app');
+    if(g)g.style.display='none';
+    if(i)i.style.display='none';
+    if(a){a.style.display='block';a.style.paddingBottom='100px';}
+    var vb=document.getElementById('version-badge');
+    if(vb&&typeof VERSION!=='undefined')vb.textContent=VERSION;
+    setTimeout(function(){if(typeof switchTab==='function')switchTab('coverage');},100);
+    console.warn('DEV MODE ACTIVE');
   }
-  // Show success banner
-  const banner = document.getElementById('icrew-import-banner');
-  if(banner){banner.style.display='flex';setTimeout(()=>banner.style.display='none',4000);}
-  // Switch to coverage tab
-  switchTab('coverage');
-  pendingIcrewData = null;
-}
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded', devUnlock);
+  } else {
+    devUnlock();
+  }
+})();
 
-// ── iOS SHORTCUT SCRIPT ───────────────────────────────────────────────
-const PCS_TOOL_URL = 'https://calebgregg.github.io/PCS-Swap-Tool/index.html';
 
-const SHORTCUT_SCRIPT = 'var src=window;try{if(window.frames[0]&&window.frames[0].document.querySelectorAll(\'table\').length>0)src=window.frames[0];}catch(e){}var rows=[];Array.from(src.document.querySelectorAll(\'table\')).forEach(function(t){Array.from(t.rows).forEach(function(r){var text=r.innerText.trim();var parts=text.split(\'\\t\').map(function(p){return p.trim();}).filter(function(p){return p.length>0;});if(parts.length>=3&&parts[0].match(/^\\d{2}[A-Z]{3}$/)&&parts[1].match(/^\\d+$/)&&parts[2].match(/^\\d+$/)){rows.push(parts[0]+\' \'+parts[1]+\' \'+parts[2]);}});});if(rows.length===0){completion(\'ERROR:No reserve data found. Make sure you are on the Reserve Requirements screen.\');}else{completion(\'${PCS_TOOL_URL}?icrew=\'+encodeURIComponent(rows.join(\'\\n\')));}';
-
-function showIosShortcutInstructions() {
-  const box = document.getElementById('shortcut-script-box');
-  if(box) box.textContent = SHORTCUT_SCRIPT;
-  document.getElementById('ios-shortcut-modal').style.display = 'flex';
-}
-
-function copyShortcutScript() {
-  navigator.clipboard.writeText(SHORTCUT_SCRIPT).then(() => {
-    const btn = document.getElementById('copy-shortcut-btn');
-    if(btn){btn.textContent='✅ Copied!';setTimeout(()=>btn.textContent='📋 Copy Script',2000);}
-  });
-}
+function retryLoad(){window.location.reload();}
 
 
 
@@ -581,13 +492,11 @@ const maxoffAvoidSel=new Set();
 let schedStartDay=null,schedLen=1,schedBodyOpen=false;
 let avoidWeekendsActive=false,maxoffWeekendsActive=false;
 
-const VERSION='v1.20250724.2';
-
 const MONTH_MAP={JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11};
 const MN=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 const DOW=['SUN','MON','TUE','WED','THU','FRI','SAT'];
 
-
+// ── TIMEZONE HELPER ──────────────────────────────
 function getTZAbbr(){
   try{
     const str=new Date().toLocaleTimeString('en-US',{timeZoneName:'short'});
@@ -595,6 +504,9 @@ function getTZAbbr(){
     return m?m[1]:'';
   }catch(e){return '';}
 }
+
+// ── iCREW IMPORT ────────────────────────────────────────────────────
+
 
 
 // ── PCS RUN WINDOW STALE CHECK ────────────────────────────────────────
@@ -625,6 +537,7 @@ function getLastPCSRunTime(){
 }
 
 function checkPCSStale(){
+  try{
   const el=document.getElementById('pcs-stale-banner');
   if(!el||!loadTime)return;
   const lastRun=getLastPCSRunTime();
@@ -633,6 +546,7 @@ function checkPCSStale(){
   } else {
     el.style.display='none';
   }
+  }catch(e){}
 }
 
 // ── DATE UTILS ──────────────────────────────────
@@ -668,11 +582,18 @@ window.addEventListener('load',()=>{
   const raw=loadTableLS('main'),ts=localStorage.getItem('pcs_table_ts');
   if(raw&&ts){
     const saved=new Date(ts);
-    document.getElementById('saved-table-ts').textContent=`Last updated: ${saved.toLocaleDateString([],{month:'short',day:'numeric'})} ${saved.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`;
+    const tz=getTZAbbr();
+    const tsStr=saved.toLocaleDateString([],{month:'short',day:'numeric'})+' '+saved.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+(tz?' '+tz:'');
+    document.getElementById('saved-table-ts').textContent='Last updated: '+tsStr;
     document.getElementById('saved-table-banner').style.display='flex';
     document.getElementById('paste-first').style.display='none';
+    // Auto-load saved table data into app
+    loadSavedTable();
   }
   updateSchedCalVisibility();
+  renderScheduleList();
+  // Ensure coverage tab is active after all init
+  if(typeof switchTab==='function')switchTab('coverage');
 });
 
 function updateSchedCalVisibility(){
@@ -700,6 +621,7 @@ function loadAdjTable(w){
   if(w==='prev')adjPrevData=data;else adjNextData=data;
   data.forEach(r=>{covMap[r.date]=r.avail-r.reqd;});
   rebuildAllDates();refreshAllCals();buildCovTable();
+  {const el=document.getElementById('coverage-cal-card');if(el)el.style.display='block';}
   const statusEl=document.getElementById(w==='prev'?'prev-adj-status':'next-adj-status');
   if(statusEl)statusEl.style.display='block';
   const btn=document.getElementById(w==='prev'?'btn-prev-adj':'btn-next-adj');
@@ -714,47 +636,51 @@ function toggleCollapse(id){
   if(!body)return;
   const isOpen=body.classList.contains('open');
   body.classList.toggle('open',!isOpen);
-  if(arrow)arrow.style.transform=isOpen?'':'rotate(180deg)';
-  if(!isOpen&&id==='res'){}
+  // ▼ = collapsed (default), ▲ = expanded (rotated 180)
+  if(arrow)arrow.style.transform=isOpen?'rotate(180deg)':'';
 }
 
 function toggleSchedCollapse(){
-  if(!reserveData.length){
-    // Show a brief hint that table needs loading first
-    const badge=document.getElementById('sched-no-table-badge');
-    if(badge){badge.style.background='#fff3d6';badge.style.color='#854F0B';setTimeout(()=>{badge.style.background='';badge.style.color='';},1200);}
-    return;
-  }
   const body=document.getElementById('sched-body');
   const arrow=document.getElementById('sched-arrow');
   if(!body)return;
   const isOpen=body.classList.contains('open');
   body.classList.toggle('open',!isOpen);
-  if(arrow)arrow.style.transform=isOpen?'':'rotate(180deg)';
-  if(!isOpen){buildSchedAddCal();renderScheduleList();}
+  // ▼ = open (default arrow pointing down into content)
+  // ▲ = collapsed (rotated 180)
+  if(arrow)arrow.style.transform=isOpen?'rotate(180deg)':'';
+  if(!isOpen){
+    renderScheduleList();
+    if(reserveData.length){buildSchedAddCal();rebuildAvoidForSchedule();}
+  }
 }
 
 function toggleSchedBody(){
   schedBodyOpen=!schedBodyOpen;
   document.getElementById('sched-body').style.display=schedBodyOpen?'block':'none';
   const btn=document.getElementById('sched-toggle-btn');
-  if(schedBodyOpen){btn.textContent='▲ Collapse';btn.className='action-btn ghost-btn';updateSchedCalVisibility();if(reserveData.length)buildSchedAddCal();}
+  if(btn&&schedBodyOpen){btn.textContent='▲ Collapse';btn.className='action-btn ghost-btn';updateSchedCalVisibility();if(reserveData.length)buildSchedAddCal();}
   else updateSchedToggleBtn();
 }
-function updateSchedToggleBtn(){const btn=document.getElementById('sched-toggle-btn');if(myRotations.length){btn.textContent='✏️ Edit';btn.className='action-btn ghost-btn';}else{btn.textContent='Add Schedule';btn.className='action-btn primary-btn';}}
+function updateSchedToggleBtn(){const btn=document.getElementById('sched-toggle-btn');if(btn&&myRotations.length){btn.textContent='✏️ Edit';btn.className='action-btn ghost-btn';}else{btn.textContent='Add Schedule';btn.className='action-btn primary-btn';}}
 function updateSchedSub(){
   const el=document.getElementById('sched-sub');
   if(!myRotations.length){el.textContent='Add your current rotations';return;}
   el.textContent=myRotations.map(t=>t.name).join(' · ');
 }
 function saveSchedAndCollapse(){
-  saveRots();schedBodyOpen=false;
-  document.getElementById('sched-body').style.display='none';
+  saveRots();
+  const body=document.getElementById('sched-body');
+  const arrow=document.getElementById('sched-arrow');
+  if(body){body.classList.remove('open');}
+  if(arrow){arrow.style.transform='rotate(180deg)';} // ▲ = collapsed
   updateSchedSub();renderScheduleList();
-  if(reserveData.length){refreshAllCals();rebuildAvoidForSchedule();}
+  if(reserveData.length){
+    refreshAllCals();rebuildAvoidForSchedule();
+    const covEl=document.getElementById('coverage-cal');
+    if(covEl)buildCoverageCalendar(covEl);
+  }
   renderMaxOffRotList();
-  checkPCSStale();
-  setInterval(checkPCSStale,5*60000);
 }
 function buildSchedAddCal(){if(!reserveData.length)return;buildCalendarInto(document.getElementById('sched-add-cal'),'sched-add');}
 function setSchedLen(n){schedLen=n;updateLenBtns('slb',n);}
@@ -768,9 +694,12 @@ function addSchedRot(){
   renderScheduleList();
   updateLenBtns('slb',1);schedLen=1;
   if(reserveData.length){
-    refreshAllCals();   // updates drop/add/scan calendars
-    buildSchedAddCal(); // rebuild sched cal immediately
+    refreshAllCals();
+    buildSchedAddCal();
     rebuildAvoidForSchedule();
+    // Rebuild coverage calendar so new rotation appears
+    const covEl=document.getElementById('coverage-cal');
+    if(covEl)buildCoverageCalendar(covEl);
   }
   renderMaxOffRotList();
 }
@@ -781,14 +710,17 @@ function removeRot(idx){
     refreshAllCals();
     rebuildAvoidForSchedule();
     buildSchedAddCal();
-    buildCoverageCalendar(document.getElementById('coverage-cal'));
+    {const el=document.getElementById('coverage-cal');if(el){setTimeout(()=>buildCoverageCalendar(el),0);}}
   }
   renderMaxOffRotList();
 }
 function addRotObj(startLabel,len){
   const p=parseDate(startLabel);if(!p)return;
   const days=[];for(let i=0;i<len;i++){const d=new Date(baseYear,p.month,p.day+i);days.push(labelFromJsDate(d));}
-  myRotations.push({name:`${MN[p.month]}${String(p.day).padStart(2,'0')}/${len}-day`,days});
+  const startD=new Date(baseYear,p.month,p.day);
+  const mo=MN[p.month];
+  const dd=String(p.day).padStart(2,'0');
+  myRotations.push({name:`${mo}${dd}/${len}-day`,days});
 }
 function renderScheduleList(){
   const el=document.getElementById('schedule-list');
@@ -818,7 +750,12 @@ function parseLines(lines){return lines.map(l=>{const p=l.trim().split(/[\s\t]+/
 function showUpdatePaste(){document.getElementById('paste-area-update').value='';document.getElementById('paste-update').style.display='block';}
 function cancelUpdate(){document.getElementById('paste-update').style.display='none';}
 function loadTableFirst(){processTableLoad(document.getElementById('paste-area-first').value);}
-function loadTableUpdate(){processTableLoad(document.getElementById('paste-area-update').value);document.getElementById('paste-update').style.display='none';}
+function loadTableUpdate(){
+  processTableLoad(document.getElementById('paste-area-update').value);
+  document.getElementById('paste-update').style.display='none';
+  const el=document.getElementById('coverage-cal');
+  if(el){el.dataset.built='';buildCoverageCalendar(el);}
+}
 function processTableLoad(raw){
   const lines=raw.split('\n').filter(l=>l.trim());
   reserveData=parseLines(lines);
@@ -864,20 +801,22 @@ function finishLoad(){
   {const el=document.getElementById('paste-update');if(el)el.style.display='none';}
   // Unlock schedule section — hide badge, show normal collapse
   {const el=document.getElementById('sched-no-table-badge');if(el)el.style.display='none';}
+  {const el=document.getElementById('coverage-cal-card');if(el)el.style.display='block';}
+  {const el=document.getElementById('coverage-cal-card');if(el)el.style.display='block';}
   // Show adj section and coverage calendar
   {const el=document.getElementById('adj-section');if(el)el.style.display='block';}
-  {const el=document.getElementById('coverage-cal-wrap');if(el)el.style.display='block';}
+  {const el=document.getElementById('coverage-cal-card');if(el)el.style.display='block';}
   sortRotations();buildCovTable();refreshAllCals();renderScheduleList();
   // Rebuild sched calendar if body is open
-  const schedBody=document.getElementById('sched-body');
-  if(schedBody&&schedBody.classList.contains('open'))buildSchedAddCal();
-  else buildSchedAddCal(); // build it anyway so it's ready
+  renderScheduleList();
+  buildSchedAddCal(); // always build so it's ready when user opens sched
   rebuildAvoidForSchedule();evaluate();updateLengthOptions();
   {const el=document.getElementById('scan-results');if(el)el.innerHTML='';}
-  buildCoverageCalendar(document.getElementById('coverage-cal'));
+  {const el=document.getElementById('coverage-cal');if(el){setTimeout(()=>buildCoverageCalendar(el),0);}}
   renderMaxOffRotList();
   buildCalendarInto(document.getElementById('maxoff-avoid-cal'),'maxoff-avoid');
-  checkPCSStale();
+  try{checkPCSStale();}catch(e){console.warn("PCS stale check error:",e);}
+  switchTab('coverage');
 }
 function refreshAllCals(){
   buildCalendarInto(document.getElementById('drop-cal'),'drop');
@@ -903,11 +842,16 @@ function buildCovTable(){
 // ── TAB ─────────────────────────────────────────
 function switchTab(tab){
   ['coverage','checker','scanner','maxoff'].forEach(t=>{
-    document.getElementById('pane-'+t).style.display=t===tab?'block':'none';
-    document.getElementById('tab-'+t).className='tab-btn'+(t===tab?' active':'');
+    const pane=document.getElementById('pane-'+t);
+    const btn=document.getElementById('tab-'+t);
+    if(pane)pane.style.display=t===tab?'block':'none';
+    if(btn)btn.className='tab-btn'+(t===tab?' active':'');
   });
   if(tab==='coverage'){
-    buildCoverageCalendar(document.getElementById('coverage-cal'));
+    const covEl=document.getElementById('coverage-cal');
+    if(covEl&&reserveData.length){
+      if(!covEl.children.length)setTimeout(()=>buildCoverageCalendar(covEl),0);
+    }
   }
 }
 
@@ -979,10 +923,11 @@ function buildCalendarInto(container,mode){
           if(isAdj)block.style.borderColor='#c9a0e8';
           const rotCovs=rot.days.map(d=>covMap[d]!==undefined?covMap[d]:null).filter(c=>c!==null);
           const rotSum=rotCovs.reduce((a,b)=>a+b,0);
-          // Show cumulative sum on drop calendars, nothing on others
-          const showSum=mode==='drop'||mode==='scan-drop';
-          const rotCovStr=(showSum&&rotCovs.length)?` <span style="font-size:8px;font-weight:700;color:${rotSum<0?'#d94040':rotSum===0?'#999':'#4a8c1c'}">Σ${rotSum>0?'+':''}${rotSum}</span>`:'';
-          block.innerHTML='<div class="rb-name">✈️ '+rot.name+rotCovStr+'</div><div class="rb-range">'+rot.days[0]+'–'+rot.days[rot.days.length-1]+'</div><div class="rb-dow">'+getDOW(rot.days[0])+'–'+getDOW(rot.days[rot.days.length-1])+'</div>';
+          const showSum=rotCovs.length>0&&mode!=='sched-add'&&mode!=='maxoff-avoid';
+          const sumColor=rotSum<0?'#d94040':rotSum===0?'#999':'#4a8c1c';
+          const sumStr=showSum?('<span style="font-size:9px;font-weight:800;color:'+sumColor+';float:right;margin-left:2px">'+(rotSum>0?'+':'')+rotSum+'</span>'):''
+          const rotLen=rot.days.length;
+          block.innerHTML='<div class="rb-name" style="display:flex;align-items:center;justify-content:space-between;gap:4px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">✈️ '+rot.name+'</span>'+sumStr+'</div><div class="rb-range">'+rot.days[0]+'–'+rot.days[rot.days.length-1]+'</div><div class="rb-dow">'+getDOW(rot.days[0])+'–'+getDOW(rot.days[rot.days.length-1])+'</div>';
           rowEl.appendChild(block);col+=span;
         } else {
           const cont=document.createElement('div');
@@ -1087,7 +1032,7 @@ function buildRotCont(rot,label,mode,isAdj){
   if(isAdj)cont.style.borderColor='#c9a0e8';
   const allDropSel=rot.days.every(d=>mode==='drop'?dropSel.has(d):mode==='scan-drop'?scanDropSel.has(d):false);
   if(allDropSel)cont.classList.add('sel-drop');
-  cont.innerHTML=`◀ ${rot.name}<br>${label}`;
+  cont.innerHTML=`◀ ${rot.days.length}d<br>${label}`;
   cont.onclick=(e)=>{e.stopPropagation();handleRotClick(rot,mode);};
   return cont;
 }
@@ -1166,7 +1111,7 @@ function buildDayCell(r,mode,isAdj,wd){
   cell.innerHTML=`<span class="dl">${label}</span><span class="dd">${dow}</span>${covStr}`;
   cell.onclick=(e)=>{
     e.stopPropagation();
-    if(mode==='sched-add'){schedStartDay=label;buildSchedAddCal();return;}
+    if(mode==='sched-add'){if(schedStartDay===label){schedStartDay=null;}else{schedStartDay=label;}buildSchedAddCal();return;}
     if(mode==='drop'){
       dropSel.has(label)?dropSel.delete(label):dropSel.add(label);
       buildCalendarInto(document.getElementById('drop-cal'),'drop');
@@ -1239,8 +1184,8 @@ function buildCoverageCalendar(container){
           if(isAdj)block.style.borderColor='#c9a0e8';
           const rotCovs=rot.days.map(d=>covMap[d]!==undefined?covMap[d]:null).filter(c=>c!==null);
           const rotSum=rotCovs.reduce((a,b)=>a+b,0);
-          const sumStr=rotCovs.length?` <span style="font-size:8px;font-weight:700;color:${rotSum<0?'#d94040':rotSum===0?'#999':'#4a8c1c'}">Σ${rotSum>0?'+':''}${rotSum}</span>`:'';
-          block.innerHTML='<div class="rb-name">✈️ '+rot.name+sumStr+'</div><div class="rb-range">'+rot.days[0]+'–'+rot.days[rot.days.length-1]+'</div><div class="rb-dow">'+getDOW(rot.days[0])+'–'+getDOW(rot.days[rot.days.length-1])+'</div>';
+          const sumStr=rotCovs.length?('<span style="font-size:9px;font-weight:800;color:'+(rotSum<0?'#d94040':rotSum===0?'#999':'#4a8c1c')+';float:right">'+(rotSum>0?'+':'')+rotSum+'</span>'):'';
+          block.innerHTML='<div class="rb-name" style="display:flex;justify-content:space-between;gap:4px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">✈️ '+rot.name+'</span>'+sumStr+'</div><div class="rb-range">'+rot.days[0]+'–'+rot.days[rot.days.length-1]+'</div><div class="rb-dow">'+getDOW(rot.days[0])+'–'+getDOW(rot.days[rot.days.length-1])+'</div>';
           rowEl.appendChild(block);col+=span;
         } else {
           const cont=document.createElement('div');
@@ -1262,11 +1207,8 @@ function buildCoverageCalendar(container){
       cell.style.cursor='default';cell.style.pointerEvents='none';
       const covColor=c!==null?(c<0?'#d94040':c===0?'#999':'#4a8c1c'):'#aaa';
       // Tint background by coverage intensity
-      if(c!==null&&!isAdj){
-        if(c<0)cell.style.background=`rgba(220,60,50,${Math.min(0.35,Math.abs(c)*0.04)})`;
-        else if(c>0)cell.style.background=`rgba(74,140,28,${Math.min(0.25,c*0.04)})`;
-      }
-      const covStr=c!==null?`<span class="dc" style="color:${covColor}">${c>0?'+':''}${c}</span>`:'';
+      
+      const covStr=c!==null?`<span class="dc" style="font-size:8px;font-weight:700;color:${covColor}">${c>0?'+':''}${c}</span>`:'';
       cell.innerHTML=`<span class="dl">${label}</span><span class="dd">${dow}</span>${covStr}`;
       rowEl.appendChild(cell);col++;
     }
@@ -1633,251 +1575,31 @@ function combinationsOf(arr,k){
 
 </script>
 
-<script type="module">
-
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getFirestore, collection, query, where, getDocs, doc, updateDoc, setDoc, getDoc, limit } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-
-const firebaseConfig = {
-  apiKey: "AIzaSyC1yqbVvvqP76RZ4qNXmap2pbR0AfxwPF8",
-  authDomain: "pcs-swap-tool.firebaseapp.com",
-  projectId: "pcs-swap-tool",
-  storageBucket: "pcs-swap-tool.firebasestorage.app",
-  messagingSenderId: "786168505785",
-  appId: "1:786168505785:web:09fe24b0917296ab6ec268"
-};
-
-const fbApp = initializeApp(firebaseConfig);
-const db = getFirestore(fbApp);
-
-const DEVICE_KEY = 'pcs_device_id';
-const LAST_CHECK_KEY = 'pcs_last_check';
-const CHECK_INTERVAL_MS = 12 * 60 * 60 * 1000;
-
-// ── Cookie helpers (shared between Safari browser + standalone PWA) ──
-// Cookies are the ONLY storage shared across both contexts on iOS
-function setCookie(name, value, days) {
-  const expires = new Date(Date.now() + days * 864e5).toUTCString();
-  // SameSite=Lax works for GitHub Pages; no Secure needed for localhost testing
-  document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires};path=/;SameSite=Lax`;
+<script>
+// ══════════════════════════════════════════
+// DEV MODE - bypasses ALL auth when true
+// Set to false before pushing to GitHub
+const DEV_MODE = false;
+// ══════════════════════════════════════════
+if(DEV_MODE){
+  // Fire immediately - no Firebase needed
+  window.addEventListener('DOMContentLoaded', function(){
+    var gate = document.getElementById('gate-screen');
+    var install = document.getElementById('install-screen');
+    var app = document.getElementById('main-app');
+    if(gate) gate.style.display='none';
+    if(install) install.style.display='none';
+    if(app){ app.style.display='block'; app.style.paddingBottom='70px'; }
+    var vb=document.getElementById('version-badge');
+    if(vb&&typeof VERSION!=='undefined')vb.textContent=VERSION;
+    if(typeof switchTab==='function')setTimeout(function(){switchTab('coverage');},10);
+    console.warn('DEV MODE: token gate bypassed');
+  });
 }
-
-function getCookie(name) {
-  const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
-  return match ? decodeURIComponent(match[1]) : null;
-}
-
-function deleteCookie(name) {
-  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;SameSite=Lax`;
-}
-
-// ── Device ID: stored in BOTH cookie and localStorage ────────────────
-// Cookie bridges Safari <-> standalone PWA
-// localStorage used as fast local cache
-function getOrCreateDeviceId() {
-  // Check cookie first (works across Safari + PWA)
-  let id = getCookie(DEVICE_KEY);
-  if (id) {
-    // Sync to localStorage as cache
-    localStorage.setItem(DEVICE_KEY, id);
-    return id;
-  }
-  // Check localStorage (fallback)
-  id = localStorage.getItem(DEVICE_KEY);
-  if (id) {
-    // Re-set cookie in case it expired
-    setCookie(DEVICE_KEY, id, 365);
-    return id;
-  }
-  // Brand new device
-  const array = new Uint8Array(16);
-  crypto.getRandomValues(array);
-  id = Array.from(array).map(b => b.toString(16).padStart(2,'0')).join('');
-  localStorage.setItem(DEVICE_KEY, id);
-  setCookie(DEVICE_KEY, id, 365);
-  return id;
-}
-
-function isStandalone() {
-  return window.navigator.standalone === true ||
-         window.matchMedia('(display-mode: standalone)').matches;
-}
-
-function showInstallScreen() {
-  document.getElementById('gate-screen').style.display = 'none';
-  document.getElementById('install-screen').style.display = 'flex';
-  waitForStandalone();
-}
-
-function grantAccess() {
-  document.getElementById('gate-screen').style.display = 'none';
-  document.getElementById('install-screen').style.display = 'none';
-  document.getElementById('main-app').style.display = 'block';
-  // Check for iCrew auto-import parameter
-  const icrewParam = new URLSearchParams(window.location.search).get('icrew');
-  if(icrewParam) {
-    try {
-      const decoded = decodeURIComponent(icrewParam);
-      const rowCount = decoded.split('\n').filter(l=>l.trim()).length;
-      // Clean URL before showing modal
-      window.history.replaceState({}, '', window.location.pathname);
-      // Show period selection modal
-      setTimeout(() => {
-        if(typeof showIcrewImportModal === 'function') {
-          showIcrewImportModal(decoded, rowCount);
-        } else {
-          // Fallback: load as primary
-          processTableLoad(decoded);
-        }
-      }, 600);
-    } catch(e) { console.error('iCrew import error:', e); }
-  }
-  // Show version badge
-  const vb=document.getElementById('version-badge');if(vb)vb.textContent=typeof VERSION!=='undefined'?VERSION:'';
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
-  }
-}
-
-function showGateError(icon, title, sub) {
-  document.getElementById('gate-spinner').style.display = 'none';
-  document.getElementById('gate-icon').style.display = 'block';
-  document.getElementById('gate-icon').textContent = icon;
-  document.getElementById('gate-title').textContent = title;
-  document.getElementById('gate-sub').textContent = sub;
-  document.getElementById('gate-btn').style.display = 'block';
-}
-
-window.retryLoad = () => { window.location.reload(); };
-
-// ── Firebase device record check ──────────────────────────────────────
-async function checkDeviceAccess(deviceId) {
-  try {
-    const deviceDoc = await getDoc(doc(db, 'devices', deviceId));
-    if (!deviceDoc.exists()) return { granted: false, reason: 'no_record' };
-    const data = deviceDoc.data();
-    if (data.revoked) return { granted: false, reason: 'revoked' };
-    localStorage.setItem(LAST_CHECK_KEY, Date.now().toString());
-    return { granted: true, data };
-  } catch (e) {
-    // Offline — use cached check time
-    const lastCheck = parseInt(localStorage.getItem(LAST_CHECK_KEY) || '0');
-    const recentEnough = Date.now() - lastCheck < CHECK_INTERVAL_MS;
-    if (recentEnough) return { granted: true, offline: true };
-    // Has cookie device ID but can't reach Firebase and cache is stale
-    // Be lenient — let them in and check next time
-    return { granted: true, offline: true };
-  }
-}
-
-// ── Poll until standalone ─────────────────────────────────────────────
-function waitForStandalone() {
-  if (isStandalone()) { grantAccess(); return; }
-  setTimeout(waitForStandalone, 800);
-}
-
-// ── Main access flow ──────────────────────────────────────────────────
-async function checkAccess() {
-  const deviceId = getOrCreateDeviceId();
-
-  // Path A: Already in standalone mode
-  if (isStandalone()) {
-    // Device ID is in cookie — check Firebase for access record
-    const { granted, reason } = await checkDeviceAccess(deviceId);
-    if (granted) {
-      grantAccess();
-    } else if (reason === 'revoked') {
-      deleteCookie(DEVICE_KEY);
-      localStorage.removeItem(DEVICE_KEY);
-      showGateError('🚫', 'Access Revoked', 'Your access has been removed by the administrator. Please contact them for a new install link.');
-    } else {
-      // No device record found — token was never validated on this device
-      // This can happen if cookie got set but Firebase write failed
-      // Show a friendlier message with retry
-      showGateError('🔒', 'Setup Incomplete', 'Your installation needs to be completed. Please open your original install link in Safari and follow the steps again.');
-    }
-    return;
-  }
-
-  // Path B: In Safari browser — check if this device already has Firebase access
-  const { granted, reason } = await checkDeviceAccess(deviceId);
-  if (granted) {
-    // Already set up on this device — just need to go to standalone
-    showInstallScreen();
-    return;
-  }
-
-  // Path C: Need a token
-  const params = new URLSearchParams(window.location.search);
-  const token = params.get('token');
-
-  if (!token) {
-    showGateError('🔒', 'Access Required', 'You need a valid install link to access this tool. Contact the administrator.');
-    return;
-  }
-
-  try {
-    const q = query(collection(db, 'tokens'), where('token', '==', token), limit(1));
-    const snap = await getDocs(q);
-
-    if (snap.empty) {
-      showGateError('❌', 'Invalid Link', 'This install link is not valid. Contact the administrator for a new one.');
-      return;
-    }
-
-    const tokenDoc = snap.docs[0];
-    const data = tokenDoc.data();
-
-    if (data.expiresAt && new Date(data.expiresAt) < new Date()) {
-      showGateError('⏰', 'Link Expired', 'This install link has expired. Contact the administrator for a new one.');
-      return;
-    }
-
-    if (data.used && (data.installCount || 0) >= (data.maxInstalls || 1)) {
-      showGateError('🚫', 'Link Already Used', 'This install link has already been used the maximum number of times. Contact the administrator for a new one.');
-      return;
-    }
-
-    // Consume token — increment install count, mark used if at max
-    const newCount = (data.installCount || 0) + 1;
-    const maxInstalls = data.maxInstalls || 1;
-    await updateDoc(doc(db, 'tokens', tokenDoc.id), {
-      used: newCount >= maxInstalls,
-      installCount: newCount,
-      usedAt: new Date().toISOString(),
-      userAgent: navigator.userAgent.slice(0, 200),
-      deviceId
-    });
-
-    // Create device access record in Firebase
-    await setDoc(doc(db, 'devices', deviceId), {
-      recipient: data.recipient || 'Unknown',
-      tokenId: tokenDoc.id,
-      grantedAt: new Date().toISOString(),
-      revoked: false,
-      deviceId
-    });
-
-    localStorage.setItem(LAST_CHECK_KEY, Date.now().toString());
-
-    // Ensure cookie is set with a long expiry so standalone mode can read it
-    setCookie(DEVICE_KEY, deviceId, 365);
-
-    // Clean token from URL
-    window.history.replaceState({}, '', window.location.pathname);
-
-    // Show install instructions
-    showInstallScreen();
-
-  } catch (e) {
-    console.error('Access check error:', e);
-    showGateError('⚠️', 'Connection Error', 'Could not verify your access. Check your internet connection and try again.');
-  }
-}
-
-checkAccess();
-
 </script>
 
+
+
+</div><!-- end pane-maxoff -->
 </body>
 </html>
