@@ -1575,29 +1575,6 @@ function combinationsOf(arr,k){
 
 </script>
 
-<script>
-// ══════════════════════════════════════════
-// DEV MODE - bypasses ALL auth when true
-// Set to false before pushing to GitHub
-const DEV_MODE = false;
-// ══════════════════════════════════════════
-if(DEV_MODE){
-  // Fire immediately - no Firebase needed
-  window.addEventListener('DOMContentLoaded', function(){
-    var gate = document.getElementById('gate-screen');
-    var install = document.getElementById('install-screen');
-    var app = document.getElementById('main-app');
-    if(gate) gate.style.display='none';
-    if(install) install.style.display='none';
-    if(app){ app.style.display='block'; app.style.paddingBottom='70px'; }
-    var vb=document.getElementById('version-badge');
-    if(vb&&typeof VERSION!=='undefined')vb.textContent=VERSION;
-    if(typeof switchTab==='function')setTimeout(function(){switchTab('coverage');},10);
-    console.warn('DEV MODE: token gate bypassed');
-  });
-}
-</script>
-
 
 
 </div><!-- end pane-maxoff -->
