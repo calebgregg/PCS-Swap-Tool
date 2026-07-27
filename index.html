@@ -43,8 +43,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .step-desc{font-size:12px;color:#777;margin-bottom:10px;line-height:1.4}
 .section-desc{font-size:12px;color:#777;margin-bottom:10px;line-height:1.4;padding:8px 10px;background:#f5f7ff;border-radius:8px;border-left:3px solid #1a73e8}
 /* Tab bar */
-.tab-bar{display:flex;gap:0;background:#fff;border-top:1px solid #e0e0e0;position:fixed;bottom:0;left:0;right:0;z-index:200;padding-bottom:0;box-shadow:0 -2px 10px rgba(0,0,0,.08)}
-.tab-btn{flex:1;padding:10px 2px max(12px,env(safe-area-inset-bottom));border-right:1px solid #e0e0e0;font-size:10px;font-weight:700;border:none;background:transparent;color:#999;cursor:pointer;text-align:center;min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.tab-bar{display:flex;gap:0;background:#fff;border-top:1px solid #e0e0e0;position:fixed;bottom:0;left:0;right:0;z-index:200;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -2px 10px rgba(0,0,0,.08)}
+.tab-btn{flex:1;padding:10px 4px;font-size:10px;font-weight:700;background:transparent;color:#999;cursor:pointer;text-align:center;min-height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;border-right:1px solid #e0e0e0}
 .tab-btn .tab-icon{font-size:22px;line-height:1}
 .tab-btn .tab-label{font-size:10px;font-weight:600;line-height:1}
 .tab-btn.active{color:#1a73e8;background:#f0f5ff;box-shadow:inset 0 -3px 0 #1a73e8}
@@ -212,12 +212,13 @@ table{border-collapse:collapse;width:100%}
 
 <!-- COVERAGE & SCHEDULE TAB -->
 <div id="pane-coverage">
+  <div style="font-size:11px;color:#7a4800;background:#fff8ee;border:1px solid #e8b86d;border-radius:10px;padding:10px 12px;margin-bottom:10px;line-height:1.5">⚠️ <b>Disclaimer:</b> Swap approvals are never guaranteed. Reserve coverage tables refresh throughout the PCS run window — always load the latest table before evaluating a swap.</div>
   <!-- Coverage Calendar - always visible when table loaded -->
   <div id="coverage-cal-card" style="display:none;background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06)">
     <div style="font-size:14px;font-weight:700;color:#333;margin-bottom:10px">📅 Reserve Coverage</div>
     <div class="cal-wrap"><div id="coverage-cal"></div></div>
   </div>
-  <div style="font-size:11px;color:#7a4800;background:#fff8ee;border:1px solid #e8b86d;border-radius:10px;padding:10px 12px;margin-bottom:10px;line-height:1.5">⚠️ <b>Disclaimer:</b> Swap approvals are never guaranteed. Reserve coverage tables refresh throughout the PCS run window — always load the latest table before evaluating a swap.</div>
+  
 
   <!-- Reserve Coverage collapsible -->
   <!-- COVERAGE CALENDAR CARD (always visible when data loaded) -->
@@ -447,7 +448,7 @@ table{border-collapse:collapse;width:100%}
 
 
 <script>
-const VERSION='v1.20250726.6';
+const VERSION='v1.20250726.9';
 
 // ════════════════════════════════════════════
 // DEV_MODE: bypasses Firebase auth for testing
@@ -825,8 +826,7 @@ function finishLoad(){
   {const el=document.getElementById('coverage-cal');if(el){setTimeout(()=>buildCoverageCalendar(el),0);}}
   renderMaxOffRotList();
   buildCalendarInto(document.getElementById('maxoff-avoid-cal'),'maxoff-avoid');
-  try{checkPCSStale();}catch(e){console.warn("PCS stale check error:",e);}
-  switchTab('coverage');
+  try{checkPCSStale();}catch(e){console.warn('PCS stale:',e);}
 }
 function refreshAllCals(){
   buildCalendarInto(document.getElementById('drop-cal'),'drop');
@@ -857,11 +857,20 @@ function switchTab(tab){
     if(pane)pane.style.display=t===tab?'block':'none';
     if(btn)btn.className='tab-btn'+(t===tab?' active':'');
   });
-  if(tab==='coverage'){
+  if(tab==='coverage'&&reserveData.length){
     const covEl=document.getElementById('coverage-cal');
-    if(covEl&&reserveData.length){
-      if(!covEl.children.length)setTimeout(()=>buildCoverageCalendar(covEl),0);
-    }
+    if(covEl)setTimeout(()=>buildCoverageCalendar(covEl),0);
+  }
+  if(tab==='checker'&&reserveData.length){
+    buildCalendarInto(document.getElementById('drop-cal'),'drop');
+    buildCalendarInto(document.getElementById('add-cal'),'add');
+  }
+  if(tab==='scanner'&&reserveData.length){
+    buildCalendarInto(document.getElementById('scan-drop-cal'),'scan-drop');
+    buildCalendarInto(document.getElementById('avoid-cal'),'avoid');
+  }
+  if(tab==='maxoff'&&reserveData.length){
+    buildCalendarInto(document.getElementById('maxoff-avoid-cal'),'maxoff-avoid');
   }
 }
 
@@ -935,9 +944,17 @@ function buildCalendarInto(container,mode){
           const rotSum=rotCovs.reduce((a,b)=>a+b,0);
           const showSum=rotCovs.length>0&&mode!=='sched-add'&&mode!=='maxoff-avoid';
           const sumColor=rotSum<0?'#d94040':rotSum===0?'#999':'#4a8c1c';
-          const sumStr=showSum?('<span style="font-size:9px;font-weight:800;color:'+sumColor+';float:right;margin-left:2px">'+(rotSum>0?'+':'')+rotSum+'</span>'):''
+          const sumStr=showSum?('<span style="font-size:9px;font-weight:800;color:'+sumColor+';float:right;margin-left:2px">'+(rotSum>0?'+':'')+rotSum+'</span>'):''; // coverage sum
           const rotLen=rot.days.length;
-          const rName=rot.name||(rot.days&&rot.days.length?rot.days[0]+'/'+rot.days.length+'-day':'?');
+          const rName=(()=>{
+  if(rot.name)return rot.name;
+  if(!rot.days||!rot.days.length)return '?';
+  // Generate MonDD/X-day from first day label (format: 05AUG)
+  const d0=rot.days[0];
+  const m=d0.match(/^(\d{2})([A-Z]{3})$/);
+  if(m){const mo=m[2];const dd=m[1];return mo+dd+'/'+rot.days.length+'-day';}
+  return d0+'/'+rot.days.length+'-day';
+})();
 block.innerHTML='<div class="rb-name" style="display:flex;align-items:center;justify-content:space-between;gap:4px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">✈️ '+rName+'</span>'+sumStr+'</div><div class="rb-range">'+rot.days[0]+'–'+rot.days[rot.days.length-1]+'</div><div class="rb-dow">'+getDOW(rot.days[0])+'–'+getDOW(rot.days[rot.days.length-1])+'</div>';
           rowEl.appendChild(block);col+=span;
         } else {
@@ -1028,11 +1045,17 @@ function buildRotBlock(rot,span,mode,isAdj){
   if(allDropSel)block.classList.add('sel-drop');
   if(mode==='avoid'&&allAvoided)block.classList.add('avoided-rot');
 
-  const dayIdx=rot.days.indexOf(rot.days[0]);
-  const isFirstDay=true;
+  // Cumulative coverage sum
+  const rotCovs=rot.days.map(d=>covMap[d]!==undefined?covMap[d]:null).filter(c=>c!==null);
+  const rotSum=rotCovs.reduce((a,b)=>a+b,0);
+  const showSum=rotCovs.length>0;
+  const sumColor=rotSum<0?'#d94040':rotSum===0?'#999':'#4a8c1c';
+  const sumStr=showSum?'<span style="font-size:9px;font-weight:800;color:'+sumColor+';flex-shrink:0">'+(rotSum>0?'+':'')+rotSum+'</span>':'';
+
   const firstInBlock=rot.days[0];
   const lastInBlock=rot.days[rot.days.length-1];
-  block.innerHTML=`<div class="rb-name">✈️ ${rot.name}</div><div class="rb-range">${firstInBlock}–${lastInBlock}</div><div class="rb-dow">${getDOW(firstInBlock)}–${getDOW(lastInBlock)}</div>`;
+  const rName=rot.name||(firstInBlock+'/'+rot.days.length+'-day');
+  block.innerHTML='<div class="rb-name" style="display:flex;align-items:center;justify-content:space-between;gap:2px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">✈️ '+rName+'</span>'+sumStr+'</div><div class="rb-range">'+firstInBlock+'–'+lastInBlock+'</div><div class="rb-dow">'+getDOW(firstInBlock)+'–'+getDOW(lastInBlock)+'</div>';
   block.onclick=(e)=>{e.stopPropagation();handleRotClick(rot,mode);};
   return block;
 }
@@ -1612,16 +1635,10 @@ if(DEV_MODE){
 
 
 </div><!-- end pane-maxoff -->
+
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, setDoc, serverTimestamp, query, where } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-
-const DEV_MODE = false; // PRODUCTION
-
-if (DEV_MODE) {
-  grantAccess();
-} else {
+import { getFirestore, collection, doc, getDoc, getDocs, updateDoc, setDoc, query, where } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyC1yqbVvvqP76RZ4qNXmap2pbR0AfxwPF8",
@@ -1635,34 +1652,27 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ── Device ID (cookie + localStorage bridge for Safari PWA) ──────────
+// ── Device ID — stored in both cookie and localStorage for Safari PWA bridge
 function getOrCreateDeviceId() {
-  const cookieKey = 'pcs_device_id';
-  const lsKey = 'pcs_device_id';
-  // Try cookie first
-  const cookieMatch = document.cookie.match(new RegExp('(?:^|; )' + cookieKey + '=([^;]+)'));
-  if (cookieMatch) {
-    localStorage.setItem(lsKey, cookieMatch[1]);
-    return cookieMatch[1];
-  }
-  // Try localStorage
-  let id = localStorage.getItem(lsKey);
+  const key = 'pcs_device_id';
+  const cookieMatch = document.cookie.match(new RegExp('(?:^|; )' + key + '=([^;]+)'));
+  if (cookieMatch) { localStorage.setItem(key, cookieMatch[1]); return cookieMatch[1]; }
+  let id = localStorage.getItem(key);
   if (!id) {
-    const arr = new Uint8Array(16);
-    crypto.getRandomValues(arr);
-    id = Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('');
+    const a = new Uint8Array(16);
+    crypto.getRandomValues(a);
+    id = Array.from(a).map(b => b.toString(16).padStart(2,'0')).join('');
   }
-  // Store in both
-  localStorage.setItem(lsKey, id);
-  const expires = new Date(Date.now() + 365*24*60*60*1000).toUTCString();
-  document.cookie = `${cookieKey}=${id}; expires=${expires}; path=/; SameSite=Lax`;
+  localStorage.setItem(key, id);
+  const exp = new Date(Date.now() + 365*24*60*60*1000).toUTCString();
+  document.cookie = key + '=' + id + '; expires=' + exp + '; path=/; SameSite=Lax';
   return id;
 }
 
 function showGateError(icon, title, sub) {
   document.getElementById('gate-spinner').style.display = 'none';
-  document.getElementById('gate-icon').style.display = 'block';
-  document.getElementById('gate-icon').textContent = icon;
+  const gi = document.getElementById('gate-icon');
+  gi.style.display = 'block'; gi.textContent = icon;
   document.getElementById('gate-title').textContent = title;
   document.getElementById('gate-sub').textContent = sub;
   document.getElementById('gate-btn').style.display = 'block';
@@ -1671,53 +1681,40 @@ function showGateError(icon, title, sub) {
 function grantAccess() {
   document.getElementById('gate-screen').style.display = 'none';
   document.getElementById('install-screen').style.display = 'none';
-  document.getElementById('main-app').style.display = 'block';
-  document.getElementById('main-app').style.paddingBottom = '120px';
+  const mainApp = document.getElementById('main-app');
+  mainApp.style.display = 'block';
+  mainApp.style.paddingBottom = '120px';
   const vb = document.getElementById('version-badge');
   if (vb && typeof VERSION !== 'undefined') vb.textContent = VERSION;
-  setTimeout(() => { if (typeof switchTab === 'function') switchTab('coverage'); }, 100);
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
+  setTimeout(function() {
+    if (typeof switchTab === 'function') switchTab('coverage');
+  }, 100);
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(function(){});
   try { if (typeof checkPCSStale === 'function') checkPCSStale(); } catch(e) {}
-  // Check for iCrew param
-  const icrewParam = new URLSearchParams(window.location.search).get('icrew');
-  if (icrewParam) {
-    try {
-      const decoded = decodeURIComponent(icrewParam);
-      const rowCount = decoded.split('\n').filter(l => l.trim()).length;
-      window.history.replaceState({}, '', window.location.pathname);
-      setTimeout(() => {
-        if (typeof processTableLoad === 'function') processTableLoad(decoded);
-      }, 600);
-    } catch(e) {}
-  }
 }
+
+window.retryLoad = function() { window.location.reload(); };
 
 async function checkAccess() {
   const deviceId = getOrCreateDeviceId();
 
-  // ── Path A: Token in URL ────────────────────────────────────────────
+  // ── Path A: Token in URL ─────────────────────────────────────────────
   const urlToken = new URLSearchParams(window.location.search).get('token');
   if (urlToken) {
     try {
-      // Look up the token
-      const q = query(collection(db, 'tokens'), where('token', '==', urlToken));
-      const snap = await getDocs(q);
-
+      const snap = await getDocs(query(collection(db, 'tokens'), where('token', '==', urlToken)));
       if (snap.empty) {
         showGateError('❌', 'Invalid Link', 'This install link is not valid. Contact your administrator.');
         return;
       }
-
       const tokenDoc = snap.docs[0];
       const data = tokenDoc.data();
 
-      // Check expiry
       if (data.expiresAt && new Date(data.expiresAt) < new Date()) {
-        showGateError('⏰', 'Link Expired', 'This install link has expired. Contact your administrator for a new one.');
+        showGateError('⏰', 'Link Expired', 'This install link has expired. Contact your administrator.');
         return;
       }
 
-      // Check if fully consumed
       const installCount = data.installCount || 0;
       const maxInstalls = data.maxInstalls || 1;
       if (installCount >= maxInstalls) {
@@ -1725,18 +1722,17 @@ async function checkAccess() {
         return;
       }
 
-      // Consume token — increment install count
-      const newCount = installCount + 1;
+      // Consume token
       await updateDoc(doc(db, 'tokens', tokenDoc.id), {
-        installCount: newCount,
-        used: newCount >= maxInstalls,
+        installCount: installCount + 1,
+        used: (installCount + 1) >= maxInstalls,
         usedAt: new Date().toISOString(),
         lastDeviceId: deviceId
       });
 
-      // Create device record
+      // Register device
       await setDoc(doc(db, 'devices', deviceId), {
-        deviceId,
+        deviceId: deviceId,
         recipient: data.recipient || 'Unknown',
         tokenId: tokenDoc.id,
         grantedAt: new Date().toISOString(),
@@ -1744,33 +1740,34 @@ async function checkAccess() {
         revoked: false
       });
 
-      // Clean URL and show install screen (first time)
+      // Clean URL
       window.history.replaceState({}, '', window.location.pathname);
+
+      // Show install screen if not already a PWA
       const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
       if (!isPWA) {
-        // Show install instructions
         document.getElementById('gate-screen').style.display = 'none';
         document.getElementById('install-screen').style.display = 'flex';
-        // After 30 seconds, grant access anyway
-        setTimeout(grantAccess, 30000);
+        // Auto-grant after 60 seconds in case user dismisses
+        setTimeout(grantAccess, 60000);
       } else {
         grantAccess();
       }
       return;
 
-    } catch (e) {
-      showGateError('⚠️', 'Error', 'Could not validate link: ' + e.message);
+    } catch(e) {
+      showGateError('⚠️', 'Error', 'Could not validate link. Please try again.');
       return;
     }
   }
 
-  // ── Path B: Device already registered ──────────────────────────────
+  // ── Path B: Device already registered ────────────────────────────────
   try {
     const deviceDoc = await getDoc(doc(db, 'devices', deviceId));
     if (deviceDoc.exists()) {
       const data = deviceDoc.data();
       if (data.revoked) {
-        showGateError('🚫', 'Access Revoked', 'Your access to PCS Swap Tool has been revoked. Contact your administrator.');
+        showGateError('🚫', 'Access Revoked', 'Your access has been revoked. Contact your administrator.');
         return;
       }
       grantAccess();
@@ -1778,14 +1775,11 @@ async function checkAccess() {
     }
   } catch(e) {}
 
-  // ── Path C: No token, no device record ─────────────────────────────
+  // ── Path C: No access ────────────────────────────────────────────────
   showGateError('🔒', 'Access Required', 'You need a valid install link to access PCS Swap Tool. Contact your administrator.');
 }
 
-// Run on load
 checkAccess();
-
-} // end DEV_MODE else
 </script>
 </body>
 </html>
