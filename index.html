@@ -43,11 +43,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .step-desc{font-size:12px;color:#777;margin-bottom:10px;line-height:1.4}
 .section-desc{font-size:12px;color:#777;margin-bottom:10px;line-height:1.4;padding:8px 10px;background:#f5f7ff;border-radius:8px;border-left:3px solid #1a73e8}
 /* Tab bar */
-.tab-bar{display:flex;gap:0;background:#fff;border-top:1px solid #e0e0e0;position:fixed;bottom:0;left:0;right:0;z-index:200;padding-bottom:max(env(safe-area-inset-bottom),8px);box-shadow:0 -2px 10px rgba(0,0,0,.08)}
-.tab-btn{flex:1;padding:10px 2px 12px;font-size:10px;font-weight:700;border:none;background:transparent;color:#999;cursor:pointer;text-align:center;min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.tab-bar{display:flex;gap:0;background:#fff;border-top:1px solid #e0e0e0;position:fixed;bottom:0;left:0;right:0;z-index:200;padding-bottom:0;box-shadow:0 -2px 10px rgba(0,0,0,.08)}
+.tab-btn{flex:1;padding:10px 2px max(12px,env(safe-area-inset-bottom));border-right:1px solid #e0e0e0;font-size:10px;font-weight:700;border:none;background:transparent;color:#999;cursor:pointer;text-align:center;min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
 .tab-btn .tab-icon{font-size:22px;line-height:1}
 .tab-btn .tab-label{font-size:10px;font-weight:600;line-height:1}
-.tab-btn.active{color:#1a73e8;background:#f0f5ff}
+.tab-btn.active{color:#1a73e8;background:#f0f5ff;box-shadow:inset 0 -3px 0 #1a73e8}
 /* Buttons */
 .action-btn{font-size:13px;padding:10px 16px;border-radius:10px;border:1.5px solid #ddd;background:#f5f5f5;color:#333;cursor:pointer;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-weight:600}
 .primary-btn{background:#1a73e8;border-color:#1558b0;color:#fff}
@@ -199,7 +199,7 @@ table{border-collapse:collapse;width:100%}
     <div style="font-size:13px;font-weight:700;color:#854F0B">📡 Reserve Table May Be Outdated</div>
     <div style="font-size:11px;color:#a06010">A new PCS window has opened. Update your reserve levels.</div>
   </div>
-  <button class="action-btn warn-btn" onclick="switchTab('coverage')" style="font-size:12px;padding:7px 12px;white-space:nowrap">Update Now</button>
+  <button class="action-btn warn-btn" onclick="switchTab('coverage');setTimeout(function(){var b=document.getElementById('res-body');var a=document.getElementById('res-arrow');if(b&&!b.classList.contains('open')){b.classList.add('open');if(a)a.style.transform='';}},200);" style="font-size:12px;padding:7px 12px;white-space:nowrap">Update Now</button>
 </div>
 
 <!-- 4-TAB BAR -->
@@ -369,7 +369,7 @@ table{border-collapse:collapse;width:100%}
 <div id="pane-scanner" style="display:none">
   <div class="section-desc">Find available rotations to pick up and reduce your total days worked this bid period.</div>
   <div class="card">
-    <div class="step-label"><span class="step-num">1</span>Select Rotation to Drop</div>
+    <div class="step-label"><span class="step-num">1</span>Rotations to Drop</div>
     <div class="step-desc">Tap a rotation block to drop it. Cumulative coverage shown on each block.</div>
     <div class="cal-wrap"><div id="scan-drop-cal"></div></div>
     <div id="scan-drop-summary" style="font-size:12px;color:#888;margin-top:8px;font-weight:600">No days selected.</div>
@@ -440,18 +440,19 @@ table{border-collapse:collapse;width:100%}
     <div class="cal-wrap"><div id="maxoff-avoid-cal"></div></div>
   </div>
   <button class="action-btn teal-btn" onclick="runMaxDaysOff()" style="width:100%;margin-bottom:10px;font-size:14px;padding:14px">★ Find Max Days Off</button>
+  <div id="maxoff-results" style="margin-top:10px"></div>
   <!-- end main-app -->
 
 
 
 
 <script>
-const VERSION='v1.20250726.5';
+const VERSION='v1.20250726.6';
 
 // ════════════════════════════════════════════
 // DEV_MODE: bypasses Firebase auth for testing
 // SET TO FALSE BEFORE PUSHING TO GITHUB
-const DEV_MODE = true;
+const DEV_MODE = false;
 // ════════════════════════════════════════════
 
 // Fire gate bypass before anything else
@@ -538,15 +539,27 @@ function getLastPCSRunTime(){
 
 function checkPCSStale(){
   try{
-  const el=document.getElementById('pcs-stale-banner');
-  if(!el||!loadTime)return;
-  const lastRun=getLastPCSRunTime();
-  if(loadTime.getTime()<lastRun){
-    el.style.display='flex';
-  } else {
-    el.style.display='none';
-  }
-  }catch(e){}
+    const el=document.getElementById('pcs-stale-banner');
+    if(!el||!loadTime)return;
+    // PCS windows open at 0700, 1200, 1700, 2000 Eastern
+    // Always compare in Eastern Time
+    const nowEST=new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
+    const loadEST=new Date(loadTime.toLocaleString('en-US',{timeZone:'America/New_York'}));
+    const windows=[7,12,17,20];
+    const todayWindows=windows.map(h=>{
+      const d=new Date(nowEST);d.setHours(h,0,0,0);return d.getTime();
+    });
+    // Find the most recent window that has passed as of now EST
+    const pastWindows=todayWindows.filter(w=>w<=nowEST.getTime());
+    if(pastWindows.length===0){el.style.display='none';return;}
+    const lastWindow=Math.max(...pastWindows);
+    // If table was loaded before the most recent window, show stale banner
+    if(loadEST.getTime()<lastWindow){
+      el.style.display='flex';
+    } else {
+      el.style.display='none';
+    }
+  }catch(e){console.warn('PCS stale:',e);}
 }
 
 // ── DATE UTILS ──────────────────────────────────
@@ -658,12 +671,9 @@ function toggleSchedCollapse(){
 function toggleSchedBody(){
   schedBodyOpen=!schedBodyOpen;
   document.getElementById('sched-body').style.display=schedBodyOpen?'block':'none';
-  const btn=document.getElementById('sched-toggle-btn');
-  if(btn&&schedBodyOpen){btn.textContent='▲ Collapse';btn.className='action-btn ghost-btn';updateSchedCalVisibility();if(reserveData.length)buildSchedAddCal();}
-  else updateSchedToggleBtn();
+  updateSchedToggleBtn();
 }
-function updateSchedToggleBtn(){const btn=document.getElementById('sched-toggle-btn');if(btn&&myRotations.length){btn.textContent='✏️ Edit';btn.className='action-btn ghost-btn';}else{btn.textContent='Add Schedule';btn.className='action-btn primary-btn';}}
-function updateSchedSub(){
+function updateSchedToggleBtn(){
   const el=document.getElementById('sched-sub');
   if(!myRotations.length){el.textContent='Add your current rotations';return;}
   el.textContent=myRotations.map(t=>t.name).join(' · ');
@@ -927,14 +937,15 @@ function buildCalendarInto(container,mode){
           const sumColor=rotSum<0?'#d94040':rotSum===0?'#999':'#4a8c1c';
           const sumStr=showSum?('<span style="font-size:9px;font-weight:800;color:'+sumColor+';float:right;margin-left:2px">'+(rotSum>0?'+':'')+rotSum+'</span>'):''
           const rotLen=rot.days.length;
-          block.innerHTML='<div class="rb-name" style="display:flex;align-items:center;justify-content:space-between;gap:4px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">✈️ '+rot.name+'</span>'+sumStr+'</div><div class="rb-range">'+rot.days[0]+'–'+rot.days[rot.days.length-1]+'</div><div class="rb-dow">'+getDOW(rot.days[0])+'–'+getDOW(rot.days[rot.days.length-1])+'</div>';
+          const rName=rot.name||(rot.days&&rot.days.length?rot.days[0]+'/'+rot.days.length+'-day':'?');
+block.innerHTML='<div class="rb-name" style="display:flex;align-items:center;justify-content:space-between;gap:4px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">✈️ '+rName+'</span>'+sumStr+'</div><div class="rb-range">'+rot.days[0]+'–'+rot.days[rot.days.length-1]+'</div><div class="rb-dow">'+getDOW(rot.days[0])+'–'+getDOW(rot.days[rot.days.length-1])+'</div>';
           rowEl.appendChild(block);col+=span;
         } else {
           const cont=document.createElement('div');
           cont.className='rot-cont';
           cont.style.opacity='0.5';cont.style.cursor='default';cont.style.pointerEvents='none';
           if(isAdj)cont.style.borderColor='#c9a0e8';
-          cont.textContent='◀ '+rot.name+' '+label;
+          cont.textContent='◀ '+(rot.name||rot.days[0]+'/'+rot.days.length+'-day')+' '+label;
           rowEl.appendChild(cont);col++;
         }
         continue;
@@ -975,7 +986,7 @@ function buildCalendarInto(container,mode){
           cont.className='rot-cont';
           cont.style.opacity='0.6';cont.style.cursor='default';cont.style.pointerEvents='none';
           if(isAdj)cont.style.borderColor='#c9a0e8';
-          cont.textContent='◀ '+rot.name+' '+label;
+          cont.textContent='◀ '+(rot.name||rot.days[0]+'/'+rot.days.length+'-day')+' '+label;
           rowEl.appendChild(cont);col++;
         }
         continue;
@@ -1192,7 +1203,7 @@ function buildCoverageCalendar(container){
           cont.className='rot-cont';
           cont.style.cursor='default';cont.style.pointerEvents='none';
           if(isAdj)cont.style.borderColor='#c9a0e8';
-          cont.textContent='◀ '+rot.name+' '+label;
+          cont.textContent='◀ '+(rot.name||rot.days[0]+'/'+rot.days.length+'-day')+' '+label;
           rowEl.appendChild(cont);col++;
         }
         continue;
@@ -1575,8 +1586,206 @@ function combinationsOf(arr,k){
 
 </script>
 
+<script>
+// ══════════════════════════════════════════
+// DEV MODE - bypasses ALL auth when true
+// Set to false before pushing to GitHub
+const DEV_MODE = true;
+// ══════════════════════════════════════════
+if(DEV_MODE){
+  // Fire immediately - no Firebase needed
+  window.addEventListener('DOMContentLoaded', function(){
+    var gate = document.getElementById('gate-screen');
+    var install = document.getElementById('install-screen');
+    var app = document.getElementById('main-app');
+    if(gate) gate.style.display='none';
+    if(install) install.style.display='none';
+    if(app){ app.style.display='block'; app.style.paddingBottom='70px'; }
+    var vb=document.getElementById('version-badge');
+    if(vb&&typeof VERSION!=='undefined')vb.textContent=VERSION;
+    if(typeof switchTab==='function')setTimeout(function(){switchTab('coverage');},10);
+    console.warn('DEV MODE: token gate bypassed');
+  });
+}
+</script>
+
 
 
 </div><!-- end pane-maxoff -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, setDoc, serverTimestamp, query, where } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const DEV_MODE = false; // PRODUCTION
+
+if (DEV_MODE) {
+  grantAccess();
+} else {
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC1yqbVvvqP76RZ4qNXmap2pbR0AfxwPF8",
+  authDomain: "pcs-swap-tool.firebaseapp.com",
+  projectId: "pcs-swap-tool",
+  storageBucket: "pcs-swap-tool.firebasestorage.app",
+  messagingSenderId: "786168505785",
+  appId: "1:786168505785:web:09fe24b0917296ab6ec268"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ── Device ID (cookie + localStorage bridge for Safari PWA) ──────────
+function getOrCreateDeviceId() {
+  const cookieKey = 'pcs_device_id';
+  const lsKey = 'pcs_device_id';
+  // Try cookie first
+  const cookieMatch = document.cookie.match(new RegExp('(?:^|; )' + cookieKey + '=([^;]+)'));
+  if (cookieMatch) {
+    localStorage.setItem(lsKey, cookieMatch[1]);
+    return cookieMatch[1];
+  }
+  // Try localStorage
+  let id = localStorage.getItem(lsKey);
+  if (!id) {
+    const arr = new Uint8Array(16);
+    crypto.getRandomValues(arr);
+    id = Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+  // Store in both
+  localStorage.setItem(lsKey, id);
+  const expires = new Date(Date.now() + 365*24*60*60*1000).toUTCString();
+  document.cookie = `${cookieKey}=${id}; expires=${expires}; path=/; SameSite=Lax`;
+  return id;
+}
+
+function showGateError(icon, title, sub) {
+  document.getElementById('gate-spinner').style.display = 'none';
+  document.getElementById('gate-icon').style.display = 'block';
+  document.getElementById('gate-icon').textContent = icon;
+  document.getElementById('gate-title').textContent = title;
+  document.getElementById('gate-sub').textContent = sub;
+  document.getElementById('gate-btn').style.display = 'block';
+}
+
+function grantAccess() {
+  document.getElementById('gate-screen').style.display = 'none';
+  document.getElementById('install-screen').style.display = 'none';
+  document.getElementById('main-app').style.display = 'block';
+  document.getElementById('main-app').style.paddingBottom = '120px';
+  const vb = document.getElementById('version-badge');
+  if (vb && typeof VERSION !== 'undefined') vb.textContent = VERSION;
+  setTimeout(() => { if (typeof switchTab === 'function') switchTab('coverage'); }, 100);
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
+  try { if (typeof checkPCSStale === 'function') checkPCSStale(); } catch(e) {}
+  // Check for iCrew param
+  const icrewParam = new URLSearchParams(window.location.search).get('icrew');
+  if (icrewParam) {
+    try {
+      const decoded = decodeURIComponent(icrewParam);
+      const rowCount = decoded.split('\n').filter(l => l.trim()).length;
+      window.history.replaceState({}, '', window.location.pathname);
+      setTimeout(() => {
+        if (typeof processTableLoad === 'function') processTableLoad(decoded);
+      }, 600);
+    } catch(e) {}
+  }
+}
+
+async function checkAccess() {
+  const deviceId = getOrCreateDeviceId();
+
+  // ── Path A: Token in URL ────────────────────────────────────────────
+  const urlToken = new URLSearchParams(window.location.search).get('token');
+  if (urlToken) {
+    try {
+      // Look up the token
+      const q = query(collection(db, 'tokens'), where('token', '==', urlToken));
+      const snap = await getDocs(q);
+
+      if (snap.empty) {
+        showGateError('❌', 'Invalid Link', 'This install link is not valid. Contact your administrator.');
+        return;
+      }
+
+      const tokenDoc = snap.docs[0];
+      const data = tokenDoc.data();
+
+      // Check expiry
+      if (data.expiresAt && new Date(data.expiresAt) < new Date()) {
+        showGateError('⏰', 'Link Expired', 'This install link has expired. Contact your administrator for a new one.');
+        return;
+      }
+
+      // Check if fully consumed
+      const installCount = data.installCount || 0;
+      const maxInstalls = data.maxInstalls || 1;
+      if (installCount >= maxInstalls) {
+        showGateError('🚫', 'Link Already Used', 'This install link has already been used the maximum number of times. Contact your administrator for a new one.');
+        return;
+      }
+
+      // Consume token — increment install count
+      const newCount = installCount + 1;
+      await updateDoc(doc(db, 'tokens', tokenDoc.id), {
+        installCount: newCount,
+        used: newCount >= maxInstalls,
+        usedAt: new Date().toISOString(),
+        lastDeviceId: deviceId
+      });
+
+      // Create device record
+      await setDoc(doc(db, 'devices', deviceId), {
+        deviceId,
+        recipient: data.recipient || 'Unknown',
+        tokenId: tokenDoc.id,
+        grantedAt: new Date().toISOString(),
+        userAgent: navigator.userAgent.slice(0, 200),
+        revoked: false
+      });
+
+      // Clean URL and show install screen (first time)
+      window.history.replaceState({}, '', window.location.pathname);
+      const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+      if (!isPWA) {
+        // Show install instructions
+        document.getElementById('gate-screen').style.display = 'none';
+        document.getElementById('install-screen').style.display = 'flex';
+        // After 30 seconds, grant access anyway
+        setTimeout(grantAccess, 30000);
+      } else {
+        grantAccess();
+      }
+      return;
+
+    } catch (e) {
+      showGateError('⚠️', 'Error', 'Could not validate link: ' + e.message);
+      return;
+    }
+  }
+
+  // ── Path B: Device already registered ──────────────────────────────
+  try {
+    const deviceDoc = await getDoc(doc(db, 'devices', deviceId));
+    if (deviceDoc.exists()) {
+      const data = deviceDoc.data();
+      if (data.revoked) {
+        showGateError('🚫', 'Access Revoked', 'Your access to PCS Swap Tool has been revoked. Contact your administrator.');
+        return;
+      }
+      grantAccess();
+      return;
+    }
+  } catch(e) {}
+
+  // ── Path C: No token, no device record ─────────────────────────────
+  showGateError('🔒', 'Access Required', 'You need a valid install link to access PCS Swap Tool. Contact your administrator.');
+}
+
+// Run on load
+checkAccess();
+
+} // end DEV_MODE else
+</script>
 </body>
 </html>
