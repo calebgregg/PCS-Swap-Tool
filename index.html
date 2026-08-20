@@ -248,14 +248,14 @@ table{border-collapse:collapse;width:100%}
       </div>
       <!-- First paste -->
       <div id="paste-first">
-        <p style="font-size:12px;color:#888;margin-bottom:8px">Paste Reserve Levels Table directly from iCrew</p>
-        <textarea id="paste-area-first" placeholder="Paste Reserve Levels Table directly from iCrew..."></textarea>
+        <p style="font-size:12px;color:#888;margin-bottom:8px">iCrew → Open Time Menu → Select Bid Period → Display Pilot Reserve Levels</p>
+        <textarea id="paste-area-first" placeholder="iCrew → Open Time Menu → Select Bid Period → Display Pilot Reserve Levels"></textarea>
         <button class="action-btn primary-btn" onclick="loadTableFirst()" style="width:100%;margin-top:8px">Load Table</button>
       </div>
       <!-- Update paste -->
       <div id="paste-update" style="display:none">
         <p style="font-size:12px;color:#888;margin-bottom:8px">Paste updated Reserve Levels Table from iCrew</p>
-        <textarea id="paste-area-update" placeholder="Paste Reserve Levels Table directly from iCrew..."></textarea>
+        <textarea id="paste-area-update" placeholder="iCrew → Open Time Menu → Select Bid Period → Display Pilot Reserve Levels"></textarea>
         <div style="display:flex;gap:8px;margin-top:8px">
           <button class="action-btn primary-btn" onclick="loadTableUpdate()" style="flex:1">Load Table</button>
           <button class="action-btn ghost-btn" onclick="cancelUpdate()" style="flex:1">Cancel</button>
@@ -282,6 +282,10 @@ table{border-collapse:collapse;width:100%}
         </div>
       </div>
       <p id="load-status" style="font-size:11px;color:#888;margin-top:8px"></p>
+      
+      <div style="margin-top:10px;border-top:1px solid #eee;padding-top:10px">
+        <button onclick="clearAllCoverage()" style="width:100%;padding:9px;border-radius:8px;border:1.5px solid #d94040;background:#fdf0f0;color:#d94040;font-size:12px;font-weight:700;cursor:pointer">🗑 Clear All Coverage Data</button>
+      </div>
       </div>
 
       <!-- Coverage table (hidden, populated by buildCovTable) -->
@@ -448,7 +452,7 @@ table{border-collapse:collapse;width:100%}
 
 
 <script>
-const VERSION='v1.20250726.10';
+const VERSION='v1.20250726.13';
 
 // ════════════════════════════════════════════
 // DEV_MODE: bypasses Firebase auth for testing
@@ -592,7 +596,21 @@ function loadTableLS(key){try{return localStorage.getItem('pcs_table_'+key);}cat
 
 // ── INIT ────────────────────────────────────────
 window.addEventListener('load',()=>{
-  myRotations=loadRotsLS();sortRotations();updateSchedSub();
+  myRotations=loadRotsLS();
+  // Remove rotations whose last day has already passed
+  const todayLabel=(()=>{const d=new Date();return String(d.getDate()).padStart(2,'0')+MN[d.getMonth()];})();
+  const todayYear=new Date().getFullYear();
+  myRotations=myRotations.filter(rot=>{
+    if(!rot.days||!rot.days.length)return false;
+    const lastDay=rot.days[rot.days.length-1];
+    const p=parseDate(lastDay);
+    if(!p)return true; // keep if unparseable
+    const lastDate=new Date(todayYear,p.month,p.day);
+    const today=new Date();today.setHours(0,0,0,0);
+    return lastDate>=today;
+  });
+  saveRots();
+  sortRotations();updateSchedSub();
   const raw=loadTableLS('main'),ts=localStorage.getItem('pcs_table_ts');
   if(raw&&ts){
     const saved=new Date(ts);
@@ -631,11 +649,33 @@ function loadAdjTable(w){
   const raw=document.getElementById(w==='prev'?'paste-prev':'paste-next').value;
   const data=parseLines(raw.split('\n').filter(l=>l.trim()));
   if(!data.length){alert('Could not parse table.');return;}
+
+  // ── d. Validate that dates align with primary month ──────────────
+  if(reserveData.length){
+    // Get primary month from reserveData
+    const primaryMonths={};
+    reserveData.forEach(r=>{const p=parseDate(r.date);if(p)primaryMonths[p.month]=(primaryMonths[p.month]||0)+1;});
+    const primaryMonth=parseInt(Object.entries(primaryMonths).sort((a,b)=>b[1]-a[1])[0][0]);
+    // Get adj month from loaded data
+    const adjMonths={};
+    data.forEach(r=>{const p=parseDate(r.date);if(p)adjMonths[p.month]=(adjMonths[p.month]||0)+1;});
+    const adjMonth=parseInt(Object.entries(adjMonths).sort((a,b)=>b[1]-a[1])[0][0]);
+    // Check alignment
+    const expectedMonth=w==='prev'?(primaryMonth===0?11:primaryMonth-1):(primaryMonth===11?0:primaryMonth+1);
+    if(adjMonth!==expectedMonth){
+      const adjMonthName=MN[adjMonth];
+      const expectedName=MN[expectedMonth];
+      const label=w==='prev'?'Preceding':'Future';
+      if(!confirm('⚠️ Date mismatch: '+label+' month should be '+expectedName+' but loaded data shows '+adjMonthName+'. Load anyway?')){return;}
+    }
+  }
+
   saveTableLS(raw,w);
   if(w==='prev')adjPrevData=data;else adjNextData=data;
   data.forEach(r=>{covMap[r.date]=r.avail-r.reqd;});
   rebuildAllDates();refreshAllCals();buildCovTable();
   {const el=document.getElementById('coverage-cal-card');if(el)el.style.display='block';}
+  buildCoverageCalendar(document.getElementById('coverage-cal'));
   const statusEl=document.getElementById(w==='prev'?'prev-adj-status':'next-adj-status');
   if(statusEl)statusEl.style.display='block';
   const btn=document.getElementById(w==='prev'?'btn-prev-adj':'btn-next-adj');
@@ -715,6 +755,7 @@ function addSchedRot(){
   renderMaxOffRotList();
 }
 function removeRot(idx){
+  if(idx<0||idx>=myRotations.length)return;
   myRotations.splice(idx,1);
   sortRotations();saveRots();updateSchedSub();renderScheduleList();
   if(reserveData.length){
@@ -735,8 +776,23 @@ function addRotObj(startLabel,len){
 }
 function renderScheduleList(){
   const el=document.getElementById('schedule-list');
-  if(!myRotations.length){el.innerHTML='<p style="font-size:12px;color:#888;margin-bottom:6px">No rotations saved. Add rotations below.</p>';return;}
-  el.innerHTML=myRotations.map((t,i)=>`<div class="rot-card"><div><div class="rot-label">✈️ ${t.name}</div><div class="rot-dates">${t.days.join(', ')}</div></div><button class="action-btn danger-btn" onclick="removeRot(${i})" style="font-size:11px;padding:5px 10px;min-height:32px">✕</button></div>`).join('');
+  if(!el)return;
+  if(!myRotations.length){
+    el.innerHTML='<p style="font-size:12px;color:#888;margin-bottom:8px">No rotations added yet.</p>';
+    return;
+  }
+  el.innerHTML='';
+  myRotations.forEach((rot,i)=>{
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0f0f0;gap:8px';
+    row.innerHTML='<span style="font-size:13px;font-weight:600;color:#333">✈️ '+rot.name+'</span>'
+      +'<button style="background:#fdf0f0;border:1.5px solid #d94040;color:#d94040;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0" data-idx="'+i+'">✕</button>';
+    row.querySelector('button').addEventListener('click',function(){
+      const idx=parseInt(this.getAttribute('data-idx'));
+      removeRot(idx);
+    });
+    el.appendChild(row);
+  });
 }
 
 // ── AVOID ────────────────────────────────────────
@@ -1249,6 +1305,32 @@ function buildCoverageCalendar(container){
     wrap.appendChild(rowEl);
   }
   container.appendChild(wrap);
+}
+
+
+// ── CLEAR ALL COVERAGE ────────────────────────────────────────────────
+function clearAllCoverage(){
+  if(!confirm('Clear all coverage data? This will reset all loaded tables.'))return;
+  reserveData=[];adjPrevData=[];adjNextData=[];allDates=[];covMap={};
+  loadTime=null;baseYear=new Date().getFullYear();
+  localStorage.removeItem('pcs_table_main');
+  localStorage.removeItem('pcs_table_prev');
+  localStorage.removeItem('pcs_table_next');
+  localStorage.removeItem('pcs_table_ts');
+  // Reset UI
+  {const el=document.getElementById('load-status');if(el)el.textContent='';}
+  {const el=document.getElementById('res-sub');if(el)el.textContent='Tap to load table';}
+  {const el=document.getElementById('saved-table-banner');if(el)el.style.display='none';}
+  {const el=document.getElementById('paste-first');if(el)el.style.display='block';}
+  {const el=document.getElementById('coverage-cal-card');if(el)el.style.display='none';}
+  {const el=document.getElementById('coverage-cal');if(el)el.innerHTML='';}
+  {const el=document.getElementById('sched-no-table-badge');if(el)el.style.display='inline-block';}
+  // Reset prev/next status indicators
+  {const el=document.getElementById('prev-adj-status');if(el)el.style.display='none';}
+  {const el=document.getElementById('next-adj-status');if(el)el.style.display='none';}
+  dropSel.clear();addSel.clear();scanDropSel.clear();avoidSel.clear();
+  refreshAllCals();
+  buildCoverageCalendar(document.getElementById('coverage-cal'));
 }
 
 // ── CROSS-BID PERIOD LOGIC ────────────────────────────────────────────
