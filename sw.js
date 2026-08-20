@@ -1,35 +1,46 @@
-const CACHE_NAME = 'pcs-swap-1784823655';
-const URLS_TO_CACHE = ['./index.html', './manifest.json'];
+// PCS Swap Tool — Service Worker v1.20250726.14
+const CACHE_NAME = 'pcs-swap-v14';
+const ASSETS = [
+  './',
+  './index.html',
+  './manifest.json'
+];
 
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(URLS_TO_CACHE))
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
   self.skipWaiting();
 });
 
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(keys => Promise.all(
-      keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-    ))
+self.addEventListener('activate', e => {
+  // Delete OLD caches only — never touch localStorage (that's in the page context)
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+    ).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-self.addEventListener('fetch', event => {
-  // Network first for HTML (always get latest), cache fallback for offline
-  if(event.request.url.includes('index.html') || event.request.url.endsWith('/')) {
-    event.respondWith(
-      fetch(event.request).then(response => {
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        return response;
-      }).catch(() => caches.match(event.request))
-    );
-  } else {
-    event.respondWith(
-      caches.match(event.request).then(cached => cached || fetch(event.request))
-    );
+self.addEventListener('fetch', e => {
+  // Network first for Firebase/CDN, cache first for app shell
+  const url = new URL(e.request.url);
+  if (url.hostname.includes('firebase') || url.hostname.includes('gstatic')) {
+    // Always network for Firebase
+    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+    return;
   }
+  // Cache first for app shell
+  e.respondWith(
+    caches.match(e.request).then(cached => {
+      if (cached) return cached;
+      return fetch(e.request).then(response => {
+        if (response && response.status === 200 && e.request.method === 'GET') {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
+        }
+        return response;
+      }).catch(() => cached);
+    })
+  );
 });
