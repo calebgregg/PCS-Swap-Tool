@@ -452,7 +452,7 @@ table{border-collapse:collapse;width:100%}
 
 
 <script>
-const VERSION='v1.20250726.13';
+const VERSION='v2.20260820';
 
 // ════════════════════════════════════════════
 // DEV_MODE: bypasses Firebase auth for testing
@@ -1770,7 +1770,8 @@ function grantAccess() {
   if (vb && typeof VERSION !== 'undefined') vb.textContent = VERSION;
   setTimeout(function() {
     if (typeof switchTab === 'function') switchTab('coverage');
-  }, 100);
+    if (typeof loadSavedTable === 'function') loadSavedTable();
+  }, 150);
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(function(){});
   try { if (typeof checkPCSStale === 'function') checkPCSStale(); } catch(e) {}
 }
@@ -1778,6 +1779,22 @@ function grantAccess() {
 window.retryLoad = function() { window.location.reload(); };
 
 async function checkAccess() {
+  // If offline, skip token check and grant access directly
+  if (!navigator.onLine) {
+    console.log('PCS Swap: offline mode — skipping token check');
+    grantAccess();
+    return;
+  }
+  // Also listen for coming back online during auth
+  window.addEventListener('offline', () => {
+    // If somehow auth is still pending and we go offline, grant access
+    const gate = document.getElementById('gate-screen');
+    if (gate && gate.style.display !== 'none') {
+      console.log('PCS Swap: went offline during auth — granting access');
+      grantAccess();
+    }
+  }, { once: true });
+
   const deviceId = getOrCreateDeviceId();
 
   // ── Path A: Token in URL ─────────────────────────────────────────────
