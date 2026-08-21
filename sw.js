@@ -1,43 +1,75 @@
-// PCS Swap Tool — Service Worker v1.20250726.14
-const CACHE_NAME = 'pcs-swap-v14';
+// PCS Swap Tool — Service Worker v2.20260821
+// INCREMENT THIS VERSION NUMBER ON EVERY RELEASE — this is what forces updates
+const VERSION = 'v2.20260821';
+const CACHE_NAME = 'pcs-swap-' + VERSION;
+
 const ASSETS = [
   './',
   './index.html',
   './manifest.json'
 ];
 
+// On install: cache assets and skip waiting immediately
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
-  self.skipWaiting();
+  self.skipWaiting(); // Don't wait — activate immediately
 });
 
+// On activate: delete ALL old caches, claim all clients
 self.addEventListener('activate', e => {
-  // Delete OLD caches only — never touch localStorage (that's in the page context)
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    ).then(() => self.clients.claim())
+    caches.keys()
+      .then(keys => Promise.all(
+        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+      ))
+      .then(() => self.clients.claim()) // Take control of all open tabs NOW
+      .then(() => {
+        // Tell every open client to reload so they get the new version
+        return self.clients.matchAll({ type: 'window' }).then(clients => {
+          clients.forEach(client => {
+            client.postMessage({ type: 'SW_UPDATED', version: VERSION });
+          });
+        });
+      })
   );
 });
 
+// Fetch: network-first for HTML so updates always land,
+//        cache-first for everything else
 self.addEventListener('fetch', e => {
-  // Network first for Firebase/CDN, cache first for app shell
   const url = new URL(e.request.url);
+
+  // Always network for Firebase/CDN
   if (url.hostname.includes('firebase') || url.hostname.includes('gstatic')) {
-    // Always network for Firebase
     e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
     return;
   }
-  // Cache first for app shell
+
+  // Network-first for the app shell (index.html)
+  if (url.pathname.endsWith('/') || url.pathname.endsWith('index.html') || url.pathname === '/PCS-Swap-Tool/') {
+    e.respondWith(
+      fetch(e.request)
+        .then(response => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(e.request))
+    );
+    return;
+  }
+
+  // Cache-first for everything else
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
       return fetch(e.request).then(response => {
         if (response && response.status === 200 && e.request.method === 'GET') {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
+          caches.open(CACHE_NAME).then(cache => cache.put(e.request, response.clone()));
         }
         return response;
       }).catch(() => cached);
