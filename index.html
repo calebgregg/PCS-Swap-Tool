@@ -68,14 +68,14 @@ table{border-collapse:collapse;width:100%}
 .cal-header{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:3px}
 .cal-dow{font-size:9px;font-weight:800;text-align:center;color:#999;padding:3px 0}
 .cal-dow.wknd{color:#c07000}
-.cal-row{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:3px}
+.cal-row{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:2px}
 .cal-day{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px;border:1.5px solid #ddd;background:#f5f5f5;color:#333;cursor:pointer;padding:3px 1px;min-height:46px;font-size:10px;line-height:1.2;text-align:center;position:relative;user-select:none}
 .cal-day .dl{font-weight:700;font-size:10px}
 .cal-day .dd{font-size:8px;color:#888}
 .cal-day .dc{display:block;font-size:7px;font-weight:700;line-height:1}
 .cal-day.wknd-day{background:#fff8ee;border-color:#e8b86d;color:#7a4800}
 .cal-day.wknd-day .dd{color:#c07000}
-.cal-day.sel-drop{background:rgba(220,60,50,.2);border-color:rgba(200,40,40,.65);color:#7a1010}
+.cal-day.rot-day{background:rgba(26,115,232,.1);border-color:#4285f4;color:#1558b0}.sel-drop{background:rgba(220,60,50,.2);border-color:rgba(200,40,40,.65);color:#7a1010}
 .cal-day.sel-add{background:rgba(60,140,40,.18);border-color:rgba(50,130,30,.6);color:#1a5c08}
 .cal-day.overlap{background:rgba(130,50,180,.2);border-color:rgba(110,30,160,.6);color:#4a0e7a;text-decoration:line-through}
 .cal-day.avoided{background:rgba(220,60,50,.15);border-color:rgba(200,40,40,.5);color:#7a1010}
@@ -88,9 +88,9 @@ table{border-collapse:collapse;width:100%}
 .cal-day.sel-add.adj-period{background:rgba(60,140,40,.18);border-color:rgba(50,130,30,.6);color:#1a5c08}
 .cal-day.avoided.adj-period{background:rgba(220,60,50,.15);border-color:rgba(200,40,40,.5);color:#7a1010}
 /* Rotation blocks */
-.rot-block{border-radius:8px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;padding:4px 6px;min-height:46px;user-select:none;border:2px solid #1a73e8;background:rgba(26,115,232,.12);color:#1558b0;overflow:hidden}
-.rot-block .rb-name{font-size:10px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rot-block .rb-range{font-size:8px;opacity:.8}
+.rot-block{border-radius:8px;cursor:pointer;display:flex;flex-direction:column;justify-content:flex-start;padding:4px 6px;min-height:46px;user-select:none;border:2px solid #1a73e8;background:rgba(26,115,232,.12);color:#1558b0;overflow:hidden}
+.rot-block .rb-name{font-size:10px;font-weight:800;line-height:1.2}
+.rot-block .rb-range{font-size:8px;opacity:.9;margin-top:1px}
 .rot-block .rb-dow{font-size:8px;opacity:.7}
 .rot-block.sel-drop{background:rgba(220,60,50,.2);border-color:rgba(200,40,40,.7);color:#7a1010}
 .rot-block.avoided-rot{background:rgba(220,60,50,.15);border-color:rgba(200,40,40,.55);color:#7a1010}
@@ -446,13 +446,17 @@ table{border-collapse:collapse;width:100%}
   </div>
   <button class="action-btn teal-btn" onclick="runMaxDaysOff()" style="width:100%;margin-bottom:10px;font-size:14px;padding:14px">★ Find Max Days Off</button>
   <div id="maxoff-results" style="margin-top:10px"></div>
-  <!-- end main-app -->
+      </div><!-- end card -->
+    </div>
+  </div>
 
+</div><!-- end pane-maxoff -->
 
-
+</div><!-- end main-app -->
 
 <script>
-const VERSION='v2.20260820';
+
+const VERSION='v2.20260821';
 
 // ════════════════════════════════════════════
 // DEV_MODE: bypasses Firebase auth for testing
@@ -481,6 +485,17 @@ const DEV_MODE = false;
     devUnlock();
   }
 })();
+
+
+function updateSchedSub(){
+  const el=document.getElementById('sched-sub');
+  if(!el)return;
+  if(!myRotations.length){
+    el.textContent='Add your current rotations';
+    return;
+  }
+  el.textContent=myRotations.map(t=>t.name).join(' · ');
+}
 
 
 function retryLoad(){window.location.reload();}
@@ -757,12 +772,21 @@ function addSchedRot(){
 function removeRot(idx){
   if(idx<0||idx>=myRotations.length)return;
   myRotations.splice(idx,1);
-  sortRotations();saveRots();updateSchedSub();renderScheduleList();
+  sortRotations();saveRots();updateSchedSub();
+  // Keep sched-body open and update list immediately
+  const schedBody=document.getElementById('sched-body');
+  const schedArrow=document.getElementById('sched-arrow');
+  if(schedBody){
+    schedBody.classList.add('open');
+    if(schedArrow)schedArrow.style.transform='';
+  }
+  renderScheduleList();
   if(reserveData.length){
     refreshAllCals();
     rebuildAvoidForSchedule();
     buildSchedAddCal();
-    {const el=document.getElementById('coverage-cal');if(el){setTimeout(()=>buildCoverageCalendar(el),0);}}
+    const covEl=document.getElementById('coverage-cal');
+    if(covEl)buildCoverageCalendar(covEl);
   }
   renderMaxOffRotList();
 }
@@ -781,16 +805,31 @@ function renderScheduleList(){
     el.innerHTML='<p style="font-size:12px;color:#888;margin-bottom:8px">No rotations added yet.</p>';
     return;
   }
+  // Use event delegation on the container - one listener handles all deletes
   el.innerHTML='';
+  // Remove old delegation listener if any
+  if(el._schedDelHandler){el.removeEventListener('click',el._schedDelHandler);}
+  el._schedDelHandler=function(ev){
+    const btn=ev.target.closest('[data-del-idx]');
+    if(!btn)return;
+    ev.stopPropagation();
+    const idx=parseInt(btn.getAttribute('data-del-idx'));
+    removeRot(idx);
+  };
+  el.addEventListener('click',el._schedDelHandler);
+  // Render rows
   myRotations.forEach((rot,i)=>{
     const row=document.createElement('div');
     row.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0f0f0;gap:8px';
-    row.innerHTML='<span style="font-size:13px;font-weight:600;color:#333">✈️ '+rot.name+'</span>'
-      +'<button style="background:#fdf0f0;border:1.5px solid #d94040;color:#d94040;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0" data-idx="'+i+'">✕</button>';
-    row.querySelector('button').addEventListener('click',function(){
-      const idx=parseInt(this.getAttribute('data-idx'));
-      removeRot(idx);
-    });
+    const btn=document.createElement('button');
+    btn.setAttribute('data-del-idx',String(i));
+    btn.style.cssText='background:#fdf0f0;border:1.5px solid #d94040;color:#d94040;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;min-width:32px;min-height:32px';
+    btn.textContent='✕';
+    const label=document.createElement('span');
+    label.style.cssText='font-size:13px;font-weight:600;color:#333';
+    label.textContent='✈️ '+rot.name;
+    row.appendChild(label);
+    row.appendChild(btn);
     el.appendChild(row);
   });
 }
@@ -987,97 +1026,37 @@ function buildCalendarInto(container,mode){
       // For add calendar: kept (non-dropped) rotations show as dimmed rot blocks
       if(mode==='add'&&rot&&!rot.days.every(d=>dropSel.has(d))){
         const dayIdx=rot.days.indexOf(label);
-        const isFirstInRow=dayIdx===0||col===0;
-        if(isFirstInRow){
-          let span=0;
-          for(let c2=col;c2<7;c2++){const s2=slots[rowStart+c2];if(s2&&rotDayMap[s2.date]===rot)span++;else break;}
-          const block=document.createElement('div');
-          block.className='rot-block';
-          block.style.gridColumn='span '+span;
-          block.style.opacity='0.5';block.style.cursor='default';block.style.pointerEvents='none';
-          if(isAdj)block.style.borderColor='#c9a0e8';
-          const rotCovs=rot.days.map(d=>covMap[d]!==undefined?covMap[d]:null).filter(c=>c!==null);
-          const rotSum=rotCovs.reduce((a,b)=>a+b,0);
-          const showSum=rotCovs.length>0&&mode!=='sched-add'&&mode!=='maxoff-avoid';
-          const sumColor=rotSum<0?'#d94040':rotSum===0?'#999':'#4a8c1c';
-          const sumStr=showSum?('<span style="font-size:9px;font-weight:800;color:'+sumColor+';float:right;margin-left:2px">'+(rotSum>0?'+':'')+rotSum+'</span>'):''; // coverage sum
-          const rotLen=rot.days.length;
-          const rName=(()=>{
-  if(rot.name)return rot.name;
-  if(!rot.days||!rot.days.length)return '?';
-  // Generate MonDD/X-day from first day label (format: 05AUG)
-  const d0=rot.days[0];
-  const m=d0.match(/^(\d{2})([A-Z]{3})$/);
-  if(m){const mo=m[2];const dd=m[1];return mo+dd+'/'+rot.days.length+'-day';}
-  return d0+'/'+rot.days.length+'-day';
-})();
-block.innerHTML='<div class="rb-name" style="display:flex;align-items:center;justify-content:space-between;gap:4px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">✈️ '+rName+'</span>'+sumStr+'</div><div class="rb-range">'+rot.days[0]+'–'+rot.days[rot.days.length-1]+'</div><div class="rb-dow">'+getDOW(rot.days[0])+'–'+getDOW(rot.days[rot.days.length-1])+'</div>';
-          rowEl.appendChild(block);col+=span;
-        } else {
-          const cont=document.createElement('div');
-          cont.className='rot-cont';
-          cont.style.opacity='0.5';cont.style.cursor='default';cont.style.pointerEvents='none';
-          if(isAdj)cont.style.borderColor='#c9a0e8';
-          cont.textContent='◀ '+(rot.name||rot.days[0]+'/'+rot.days.length+'-day')+' '+label;
-          rowEl.appendChild(cont);col++;
-        }
+        const cell=buildRotCell(rot,label,'add',isAdj,dayIdx===0);
+        cell.style.opacity='0.5';cell.style.cursor='default';cell.style.pointerEvents='none';
+        rowEl.appendChild(cell);col++;
         continue;
       }
+
 
       // For avoid calendar: if rotation exists and NOT in scanDropSel -> show as avoided rot-block
       if(mode==='avoid'&&rot&&!rot.days.some(d=>scanDropSel.has(d))){
         const dayIdx=rot.days.indexOf(label);
-        const isFirstInRow=dayIdx===0||col===0;
-        if(isFirstInRow){
-          let span=0;
-          for(let c2=col;c2<7;c2++){const s2=slots[rowStart+c2];if(s2&&rotDayMap[s2.date]===rot)span++;else break;}
-          const block=buildRotBlock(rot,span,mode,isAdj);
-          rowEl.appendChild(block);col+=span;
-        } else {
-          const cont=buildRotCont(rot,label,mode,isAdj);
-          rowEl.appendChild(cont);col++;
-        }
+        const cell=buildRotCell(rot,label,mode,isAdj,dayIdx===0);
+        rowEl.appendChild(cell);col++;
         continue;
       }
 
       // For sched-add calendar: show existing rotations as dimmed non-selectable blocks
       if(mode==='sched-add'&&rot){
         const dayIdx=rot.days.indexOf(label);
-        const isFirstInRow=dayIdx===0||col===0;
-        if(isFirstInRow){
-          let span=0;
-          for(let c2=col;c2<7;c2++){const s2=slots[rowStart+c2];if(s2&&rotDayMap[s2.date]===rot)span++;else break;}
-          const block=document.createElement('div');
-          block.className='rot-block';
-          block.style.gridColumn='span '+span;
-          block.style.opacity='0.6';block.style.cursor='default';block.style.pointerEvents='none';
-          if(isAdj)block.style.borderColor='#c9a0e8';
-          block.innerHTML='<div class="rb-name">✈️ '+rot.name+'</div><div class="rb-range">'+rot.days[0]+'–'+rot.days[rot.days.length-1]+'</div><div class="rb-dow">'+getDOW(rot.days[0])+'–'+getDOW(rot.days[rot.days.length-1])+'</div>';
-          rowEl.appendChild(block);col+=span;
-        } else {
-          const cont=document.createElement('div');
-          cont.className='rot-cont';
-          cont.style.opacity='0.6';cont.style.cursor='default';cont.style.pointerEvents='none';
-          if(isAdj)cont.style.borderColor='#c9a0e8';
-          cont.textContent='◀ '+(rot.name||rot.days[0]+'/'+rot.days.length+'-day')+' '+label;
-          rowEl.appendChild(cont);col++;
-        }
+        const cell=buildRotCell(rot,label,'sched-add',isAdj,dayIdx===0);
+        cell.style.opacity='0.6';cell.style.cursor='default';cell.style.pointerEvents='none';
+        rowEl.appendChild(cell);col++;
         continue;
       }
 
-      // For drop/scan-drop calendars: show rotation blocks
+
+      // For drop/scan-drop calendars: per-cell rotation rendering
       if((mode==='drop'||mode==='scan-drop')&&rot){
         const dayIdx=rot.days.indexOf(label);
-        const isFirstInRow=dayIdx===0||col===0;
-        if(isFirstInRow){
-          let span=0;
-          for(let c2=col;c2<7;c2++){const s2=slots[rowStart+c2];if(s2&&rotDayMap[s2.date]===rot)span++;else break;}
-          const block=buildRotBlock(rot,span,mode,isAdj);
-          rowEl.appendChild(block);col+=span;
-        } else {
-          const cont=buildRotCont(rot,label,mode,isAdj);
-          rowEl.appendChild(cont);col++;
-        }
+        const isFirstDay=dayIdx===0;
+        const cell=buildRotCell(rot,label,mode,isAdj,isFirstDay);
+        rowEl.appendChild(cell);col++;
         continue;
       }
 
@@ -1088,6 +1067,72 @@ block.innerHTML='<div class="rb-name" style="display:flex;align-items:center;jus
     wrap.appendChild(rowEl);
   }
   container.appendChild(wrap);
+}
+
+
+// ── PER-CELL ROTATION RENDERER ───────────────────────────────────────
+// Each day in a rotation renders as an individual cell (same size as cal-day)
+// with blue styling. Only first day shows the cumulative sum.
+function buildRotCell(rot, label, mode, isAdj, isFirstDay) {
+  const cell = document.createElement('div');
+  const dow = getDOW(label);
+  const dayIdx = rot.days.indexOf(label);
+  const isLastDay = dayIdx === rot.days.length - 1;
+  const isSingle = rot.days.length === 1;
+
+  // Selection state — whole rotation selects together
+  const isSel = mode==='drop'      ? dropSel.has(rot.days[0])
+              : mode==='scan-drop' ? scanDropSel.has(rot.days[0])
+              : mode==='avoid'     ? avoidSel.has(rot.days[0])
+              : false;
+
+  const rotColor = isAdj ? '#9c6fc0' : '#4285f4';
+  const rotBg    = isAdj ? 'rgba(156,111,192,.15)' : 'rgba(26,115,232,.13)';
+  const selBg    = 'rgba(220,60,50,.22)';
+  const selColor = 'rgba(200,40,40,.8)';
+
+  cell.className = 'cal-day';
+  cell.style.background   = isSel ? selBg    : rotBg;
+  cell.style.borderColor  = isSel ? selColor : rotColor;
+  cell.style.borderStyle  = 'solid';
+  cell.style.borderWidth  = '1.5px';
+  cell.style.color        = isSel ? '#7a1010' : (isAdj ? '#5a2d82' : '#1558b0');
+
+  // ── Connected-band border radius ─────────────────────────────────
+  if(!isSingle) {
+    if(isFirstDay)      { cell.style.borderRadius = '8px 0 0 8px'; cell.style.borderRight = 'none'; }
+    else if(isLastDay)  { cell.style.borderRadius = '0 8px 8px 0'; cell.style.borderLeft  = 'none'; }
+    else                { cell.style.borderRadius = '0';           cell.style.borderLeft  = 'none'; cell.style.borderRight = 'none'; }
+  }
+
+  // ── Coverage sum — FIRST day only, large & prominent ─────────────
+  const rotCovs = rot.days.map(d=>covMap[d]!==undefined?covMap[d]:null).filter(c=>c!==null);
+  const rotSum  = rotCovs.reduce((a,b)=>a+b,0);
+  const sumColor = rotSum<0?'#d94040':rotSum===0?'#888':'#2d7a1c';
+  const sumStr = (isFirstDay && rotCovs.length)
+    ? '<span style="font-size:10px;font-weight:900;color:'+sumColor+';display:block;line-height:1.2;margin-top:1px">'+(rotSum>0?'+':'')+rotSum+'</span>'
+    : '';
+
+  // ── Rotation name — first day only, small ────────────────────────
+  const rName = rot.name||(rot.days[0]+'/'+rot.days.length+'-day');
+  const nameStr = isFirstDay
+    ? '<span style="font-size:7px;opacity:.8;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1">'+rName+'</span>'
+    : '';
+
+  cell.innerHTML =
+    '<span class="dl">'+label+'</span>'+
+    '<span class="dd">'+dow+'</span>'+
+    sumStr+nameStr;
+
+  // ── Click — whole rotation toggles ───────────────────────────────
+  if(mode !== 'sched-add' && mode !== 'add') {
+    cell.onclick = (ev) => { ev.stopPropagation(); handleRotClick(rot, mode); };
+  } else {
+    cell.style.cursor = 'default';
+    cell.style.pointerEvents = 'none';
+  }
+
+  return cell;
 }
 
 function buildRotBlock(rot,span,mode,isAdj){
@@ -1111,18 +1156,29 @@ function buildRotBlock(rot,span,mode,isAdj){
   const firstInBlock=rot.days[0];
   const lastInBlock=rot.days[rot.days.length-1];
   const rName=rot.name||(firstInBlock+'/'+rot.days.length+'-day');
-  block.innerHTML='<div class="rb-name" style="display:flex;align-items:center;justify-content:space-between;gap:2px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">✈️ '+rName+'</span>'+sumStr+'</div><div class="rb-range">'+firstInBlock+'–'+lastInBlock+'</div><div class="rb-dow">'+getDOW(firstInBlock)+'–'+getDOW(lastInBlock)+'</div>';
+  // Show full details when span>1, abbreviated when span=1
+  if(span>1){
+    block.innerHTML='<div class="rb-name" style="display:flex;justify-content:space-between;align-items:flex-start"><span style="font-weight:800">'+firstInBlock+'</span>'+sumStr+'</div><div class="rb-range">'+rName+'</div><div class="rb-dow">'+getDOW(firstInBlock)+'–'+getDOW(lastInBlock)+'</div>';
+  } else {
+    block.innerHTML='<div class="rb-name" style="display:flex;justify-content:space-between;align-items:flex-start"><span style="font-weight:800">'+firstInBlock+'</span>'+sumStr+'</div><div class="rb-range" style="font-size:8px">'+getDOW(firstInBlock)+'</div>';
+  }
   block.onclick=(e)=>{e.stopPropagation();handleRotClick(rot,mode);};
   return block;
 }
 
 function buildRotCont(rot,label,mode,isAdj){
+  // Mid-week continuation cell: solid block matching rotation style
   const cont=document.createElement('div');
-  cont.className='rot-cont';
-  if(isAdj)cont.style.borderColor='#c9a0e8';
+  cont.className='rot-block';
+  cont.style.gridColumn='span 1';
+  const rotColor=isAdj?'#9c6fc0':'#4285f4';
+  const rotBg=isAdj?'#f3eaff':'#e8f0fe';
+  cont.style.background=rotBg;
+  cont.style.border='1.5px solid '+rotColor;
+  cont.style.opacity='0.75';
   const allDropSel=rot.days.every(d=>mode==='drop'?dropSel.has(d):mode==='scan-drop'?scanDropSel.has(d):false);
   if(allDropSel)cont.classList.add('sel-drop');
-  cont.innerHTML=`◀ ${rot.days.length}d<br>${label}`;
+  cont.innerHTML='<div class="rb-name" style="font-weight:800;color:'+(isAdj?'#5a2d82':'#1558b0')+'">'+label+'</div><div class="rb-range" style="font-size:8px;color:'+rotColor+'">'+getDOW(label)+'</div>';
   cont.onclick=(e)=>{e.stopPropagation();handleRotClick(rot,mode);};
   return cont;
 }
@@ -1263,28 +1319,11 @@ function buildCoverageCalendar(container){
 
       if(rot){
         const dayIdx=rot.days.indexOf(label);
-        const isFirstInRow=dayIdx===0||col===0;
-        if(isFirstInRow){
-          let span=0;
-          for(let c2=col;c2<7;c2++){const s2=slots[rowStart+c2];if(s2&&rotDayMap[s2.date]===rot)span++;else break;}
-          const block=document.createElement('div');
-          block.className='rot-block';
-          block.style.gridColumn='span '+span;
-          block.style.cursor='default';block.style.pointerEvents='none';
-          if(isAdj)block.style.borderColor='#c9a0e8';
-          const rotCovs=rot.days.map(d=>covMap[d]!==undefined?covMap[d]:null).filter(c=>c!==null);
-          const rotSum=rotCovs.reduce((a,b)=>a+b,0);
-          const sumStr=rotCovs.length?('<span style="font-size:9px;font-weight:800;color:'+(rotSum<0?'#d94040':rotSum===0?'#999':'#4a8c1c')+';float:right">'+(rotSum>0?'+':'')+rotSum+'</span>'):'';
-          block.innerHTML='<div class="rb-name" style="display:flex;justify-content:space-between;gap:4px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">✈️ '+rot.name+'</span>'+sumStr+'</div><div class="rb-range">'+rot.days[0]+'–'+rot.days[rot.days.length-1]+'</div><div class="rb-dow">'+getDOW(rot.days[0])+'–'+getDOW(rot.days[rot.days.length-1])+'</div>';
-          rowEl.appendChild(block);col+=span;
-        } else {
-          const cont=document.createElement('div');
-          cont.className='rot-cont';
-          cont.style.cursor='default';cont.style.pointerEvents='none';
-          if(isAdj)cont.style.borderColor='#c9a0e8';
-          cont.textContent='◀ '+(rot.name||rot.days[0]+'/'+rot.days.length+'-day')+' '+label;
-          rowEl.appendChild(cont);col++;
-        }
+        const cell=buildRotCell(rot,label,'drop',isAdj,dayIdx===0);
+        cell.style.cursor='default';cell.style.pointerEvents='none';
+        // Remove onclick from coverage cal cells
+        cell.onclick=null;
+        rowEl.appendChild(cell);col++;
         continue;
       }
 
@@ -1689,29 +1728,7 @@ function combinationsOf(arr,k){
 }
 
 
-</script>
 
-<script>
-// ══════════════════════════════════════════
-// DEV MODE - bypasses ALL auth when true
-// Set to false before pushing to GitHub
-const DEV_MODE = true;
-// ══════════════════════════════════════════
-if(DEV_MODE){
-  // Fire immediately - no Firebase needed
-  window.addEventListener('DOMContentLoaded', function(){
-    var gate = document.getElementById('gate-screen');
-    var install = document.getElementById('install-screen');
-    var app = document.getElementById('main-app');
-    if(gate) gate.style.display='none';
-    if(install) install.style.display='none';
-    if(app){ app.style.display='block'; app.style.paddingBottom='70px'; }
-    var vb=document.getElementById('version-badge');
-    if(vb&&typeof VERSION!=='undefined')vb.textContent=VERSION;
-    if(typeof switchTab==='function')setTimeout(function(){switchTab('coverage');},10);
-    console.warn('DEV MODE: token gate bypassed');
-  });
-}
 </script>
 
 
